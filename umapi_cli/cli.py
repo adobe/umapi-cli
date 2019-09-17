@@ -1,0 +1,88 @@
+import click
+import sys
+import umapi_client
+from . import config
+from . import client
+from . import formatter
+
+
+@click.group()
+@click.help_option('-h', '--help')
+def app():
+    pass
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('--org-id', help="Organization ID",
+              prompt='Organization ID')
+@click.option('--tech-acct', help="Tech Account ID",
+              prompt='Tech Account ID')
+@click.option('--api-key', help="API Key",
+              prompt='API Key')
+@click.option('--client-secret', help="Client Secret",
+              prompt='Client Secret')
+@click.option('--priv-key', help="Private Key Path",
+              prompt='Private Key Path', default='private.key')
+@click.option('-d/-D', 'delete_key', help="Delete private key file (or do not delete it)",
+              prompt='Delete private key file?', default=False)
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-o', 'overwrite', help="Overwrite existing config",
+              default=False)
+def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, console_name, overwrite):
+    """Initialize a new UMAPI client config"""
+    if config.exists(console_name):
+        confirm_overwrite = overwrite or click.confirm(
+            "Overwrite config for '{}'?".format(console_name), default=False)
+        if not confirm_overwrite:
+            click.echo("Can't overwrite config for '{}'".format(console_name))
+            sys.exit(1)
+
+    config_filename = config.init(console_name, org_id, tech_acct, api_key, client_secret, priv_key, delete_key)
+    click.echo("'{}' initialized at {}".format(console_name, config_filename))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
+              show_default=True)
+@click.option('-e', '--email', help='User email address', required=True)
+def user_read(console_name, output_format, email):
+    """Get details for a single user"""
+    fmtr = _formatter(output_format)
+    auth_config = config.read(console_name)
+    umapi_conn = client.create(auth_config, False)
+    user = umapi_client.UserQuery(umapi_conn, email).result()
+    if not user:
+        click.echo('No user found')
+        sys.exit(1)
+    fmtr.record(user)
+    fmtr.write()
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
+              show_default=True)
+def user_read_all(console_name, output_format):
+    """Get details for all users belonging to a console"""
+    fmtr = _formatter(output_format)
+    auth_config = config.read(console_name)
+    umapi_conn = client.create(auth_config, False)
+    query = umapi_client.UsersQuery(umapi_conn)
+    for user in query:
+        fmtr.record(user)
+    fmtr.write()
+
+
+def _formatter(output_format):
+    fmtr_class = getattr(formatter, output_format, None)
+    if fmtr_class is None:
+        click.echo("Unknown format '{}'".format(output_format))
+        sys.exit(1)
+    return fmtr_class(sys.stdout)

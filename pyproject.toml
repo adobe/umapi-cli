@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "umapi-cli"
+version = "0.1.0"
+description = "User Management API CLI Tool"
+authors = ["Andrew Dorton <adorton@adobe.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+toml = "^0.10.0"
+click = "^7.0"
+requests = "^2.22"
+umapi-client = "^2.12"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+
+[tool.poetry.scripts]
+umapi = 'umapi_cli.cli:app'
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -1,0 +1,4 @@
+venv
+.idea
+umapi_cli.egg-info
+.config
