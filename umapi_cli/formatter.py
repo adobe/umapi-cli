@@ -51,13 +51,15 @@ class CSVFormatter(Formatter):
         fieldnames = self.records[0].keys()
         writer = _csv.DictWriter(self.handler, fieldnames)
         writer.writeheader()
-        writer.writerows(map(self.format_list, self.records))
+        writer.writerows(map(self.format_rec, self.records))
 
     @staticmethod
-    def format_list(record):
+    def format_rec(record):
         formatted = {}
         formatted.update(record)
-        for k in ('adminRoles', 'groups'):
-            list_val = record.get(k, [])
-            formatted[k] = ','.join(list_val)
+        for k, v in record.items():
+            if isinstance(v, list):
+                formatted[k] = ','.join(v)
+            else:
+                formatted[k] = v
         return formatted
