@@ -48,10 +48,16 @@ class CSVFormatter(Formatter):
     def write(self):
         if not self.records:
             return
-        fieldnames = self.records[0].keys()
-        writer = _csv.DictWriter(self.handler, fieldnames)
+        writer = _csv.DictWriter(self.handler, self.fieldnames(self.records))
         writer.writeheader()
         writer.writerows(map(self.format_rec, self.records))
+
+    @staticmethod
+    def fieldnames(records):
+        fieldnames = set()
+        for rec in records:
+            fieldnames.update(set(rec.keys()))
+        return sorted(list(fieldnames))
 
     @staticmethod
     def format_rec(record):

@@ -86,3 +86,38 @@ def _formatter(output_format):
         click.echo("Unknown format '{}'".format(output_format))
         sys.exit(1)
     return fmtr_class(sys.stdout)
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
+              show_default=True)
+@click.option('-g', '--group', 'group_name', help='Group name', required=True)
+def group_read(console_name, output_format, group_name):
+    """Get details for a single user group"""
+    fmtr = _formatter(output_format)
+    auth_config = config.read(console_name)
+    umapi_conn = client.create(auth_config, False)
+    query = umapi_client.GroupsQuery(umapi_conn)
+    group,  = [g for g in query if g['groupName'].lower() == group_name.lower()]
+    fmtr.record(group)
+    fmtr.write()
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
+              show_default=True)
+def group_read_all(console_name, output_format):
+    """Get details for all groups in a console"""
+    fmtr = _formatter(output_format)
+    auth_config = config.read(console_name)
+    umapi_conn = client.create(auth_config, False)
+    query = umapi_client.GroupsQuery(umapi_conn)
+    for group in query:
+        fmtr.record(group)
+    fmtr.write()
