@@ -48,7 +48,7 @@ class CSVFormatter(Formatter):
     def write(self):
         if not self.records:
             return
-        writer = _csv.DictWriter(self.handler, self.fieldnames(self.records))
+        writer = _csv.DictWriter(self.handler, self.fieldnames(self.records), lineterminator='\n')
         writer.writeheader()
         writer.writerows(map(self.format_rec, self.records))
 

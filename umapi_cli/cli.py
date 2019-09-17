@@ -6,6 +6,20 @@ from . import client
 from . import formatter
 
 
+def _formatter(output_format, handler):
+    fmtr_class = getattr(formatter, output_format, None)
+    if fmtr_class is None:
+        click.echo("Unknown format '{}'".format(output_format))
+        sys.exit(1)
+    return fmtr_class(handler)
+
+
+def _output_handler(out_file=None):
+    if out_file is not None:
+        return open(out_file, 'w', encoding='utf-8')
+    return sys.stdout
+
+
 @click.group()
 @click.help_option('-h', '--help')
 def app():
@@ -52,7 +66,7 @@ def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, consol
 @click.option('-e', '--email', help='User email address', required=True)
 def user_read(console_name, output_format, email):
     """Get details for a single user"""
-    fmtr = _formatter(output_format)
+    fmtr = _formatter(output_format, _output_handler())
     auth_config = config.read(console_name)
     umapi_conn = client.create(auth_config, False)
     user = umapi_client.UserQuery(umapi_conn, email).result()
@@ -69,23 +83,16 @@ def user_read(console_name, output_format, email):
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
-def user_read_all(console_name, output_format):
+@click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
+def user_read_all(console_name, output_format, out_file):
     """Get details for all users belonging to a console"""
-    fmtr = _formatter(output_format)
+    fmtr = _formatter(output_format, _output_handler(out_file))
     auth_config = config.read(console_name)
     umapi_conn = client.create(auth_config, False)
     query = umapi_client.UsersQuery(umapi_conn)
     for user in query:
         fmtr.record(user)
     fmtr.write()
-
-
-def _formatter(output_format):
-    fmtr_class = getattr(formatter, output_format, None)
-    if fmtr_class is None:
-        click.echo("Unknown format '{}'".format(output_format))
-        sys.exit(1)
-    return fmtr_class(sys.stdout)
 
 
 @app.command()
@@ -97,7 +104,7 @@ def _formatter(output_format):
 @click.option('-g', '--group', 'group_name', help='Group name', required=True)
 def group_read(console_name, output_format, group_name):
     """Get details for a single user group"""
-    fmtr = _formatter(output_format)
+    fmtr = _formatter(output_format, _output_handler())
     auth_config = config.read(console_name)
     umapi_conn = client.create(auth_config, False)
     query = umapi_client.GroupsQuery(umapi_conn)
@@ -112,9 +119,10 @@ def group_read(console_name, output_format, group_name):
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
-def group_read_all(console_name, output_format):
+@click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
+def group_read_all(console_name, output_format, out_file):
     """Get details for all groups in a console"""
-    fmtr = _formatter(output_format)
+    fmtr = _formatter(output_format, _output_handler(out_file))
     auth_config = config.read(console_name)
     umapi_conn = client.create(auth_config, False)
     query = umapi_client.GroupsQuery(umapi_conn)
