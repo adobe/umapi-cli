@@ -2,3 +2,4 @@ venv
 .idea
 umapi_cli.egg-info
 .config
+__pycache__
