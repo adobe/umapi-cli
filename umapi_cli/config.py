@@ -8,7 +8,7 @@ def exists(console_name):
     return (_BASEDIR / '.config' / console_name).exists()
 
 
-def init(console_namm, org_id, tech_acct, api_key, client_secret, priv_key_file, delete_key_file):
+def init(console_name, org_id, tech_acct, api_key, client_secret, priv_key_file, delete_key_file):
     config_dir = _BASEDIR / '.config'
     if not config_dir.exists():
         Path.mkdir(config_dir)
@@ -16,7 +16,7 @@ def init(console_namm, org_id, tech_acct, api_key, client_secret, priv_key_file,
     if not priv_key_path.exists():
         raise FileNotFoundError("Can't find private key file {}".format(priv_key_file))
     priv_key = priv_key_path.open('r').read()
-    config_filename = config_dir / console_namm
+    config_filename = config_dir / console_name
     with config_filename.open('w') as fh:
         toml.dump({
             'org_id': org_id,
