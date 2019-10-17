@@ -20,6 +20,10 @@ def _output_handler(out_file=None):
     return sys.stdout
 
 
+def _input_handler(in_file):
+    return open(in_file, 'r')
+
+
 @click.group()
 @click.help_option('-h', '--help')
 def app():
@@ -150,7 +154,31 @@ def group_read_all(console_name, output_format, out_file):
 def user_create(console_name, user_type, email, username, domain, groups, firstname, lastname, country, test_mode):
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
-    user = client.user_create_action(user_type, email, username, domain, groups, firstname, lastname, country)
+    user = client.user_create_action(user_type, email, username, domain, groups.split(','), firstname, lastname,
+                                     country)
     umapi_conn.execute_single(user)
     umapi_conn.execute_queued()
     click.echo("errors: {}".format(user.execution_errors()))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
+              show_default=True)
+@click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
+def user_create_bulk(console_name, input_format, in_file, test_mode):
+    fmtr = _formatter(input_format, _input_handler(in_file))
+    auth_config = config.read(console_name)
+    umapi_conn = client.create_conn(auth_config, test_mode)
+    for user in fmtr.read():
+        user_action = client.user_create_action(user_type=user['type'], email=user['email'], username=user['username'],
+                                                domain=user['domain'], groups=user['groups'],
+                                                firstname=user['firstname'], lastname=user['lastname'],
+                                                country=user['country'])
+        umapi_conn.execute_single(user_action)
+        click.echo("errors: {}".format(user_action.execution_errors()))
+    umapi_conn.execute_queued()

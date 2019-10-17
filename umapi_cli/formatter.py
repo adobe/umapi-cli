@@ -25,6 +25,9 @@ class Formatter:
     def write(self):
         pass
 
+    def read(self):
+        pass
+
 
 class PrettyFormatter(Formatter):
     def write(self):
@@ -36,12 +39,20 @@ class PrettyFormatter(Formatter):
             formatted.append('\n')
             self.handler.write('\n'.join(formatted))
 
+    def read(self):
+        raise NotImplementedError
+
 
 class JSONFormatter(Formatter):
     def write(self):
         for record in self.records:
             _json.dump(record, self.handler)
             self.handler.write('\n')
+
+    def read(self):
+        for raw_record in self.handler:
+            self.record(_json.loads(raw_record))
+        return self.records
 
 
 class CSVFormatter(Formatter):
@@ -51,6 +62,12 @@ class CSVFormatter(Formatter):
         writer = _csv.DictWriter(self.handler, self.fieldnames(self.records), lineterminator='\n')
         writer.writeheader()
         writer.writerows(map(self.format_rec, self.records))
+
+    def read(self):
+        reader = _csv.DictReader(self.handler)
+        for record in reader:
+            self.record({k: self.parse_field(v) for k, v in record.items()})
+        return self.records
 
     @staticmethod
     def fieldnames(records):
@@ -69,3 +86,7 @@ class CSVFormatter(Formatter):
             else:
                 formatted[k] = v
         return formatted
+
+    @staticmethod
+    def parse_field(field_val):
+        return field_val.split(',') if ',' in field_val else field_val

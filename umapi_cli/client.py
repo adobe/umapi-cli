@@ -24,5 +24,5 @@ def user_create_action(user_type, email, username, domain, groups, firstname, la
     user = umapi_client.UserAction(USER_TYPES[user_type], email, username, domain)
     user.create(firstname, lastname, country, email)
     if groups is not None:
-        user.add_to_groups(groups.split(','))
+        user.add_to_groups(groups)
     return user
