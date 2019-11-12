@@ -23,7 +23,7 @@ def init(console_name, org_id, tech_acct, api_key, client_secret, priv_key_file,
             'tech_acct_id': tech_acct,
             'api_key': api_key,
             'client_secret': client_secret,
-            'priv_key_data': priv_key,
+            'private_key_data': priv_key,
         }, fh)
     if delete_key_file:
         priv_key_path.unlink()
