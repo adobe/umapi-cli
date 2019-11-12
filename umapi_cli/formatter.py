@@ -15,12 +15,27 @@ def csv(handler):
 
 
 class Formatter:
+    output_format = [
+        "country",
+        "domain",
+        "email",
+        "username",
+        "firstname",
+        "lastname",
+        "groups",
+        "type",
+    ]
+
     def __init__(self, handler):
         self.records = []
         self.handler = handler
 
     def record(self, record):
         self.records.append(record)
+
+    @classmethod
+    def format_output(cls, record):
+        return {k: v for k, v in record.items() if k in cls.output_format}
 
     def write(self):
         pass
@@ -31,7 +46,7 @@ class Formatter:
 
 class PrettyFormatter(Formatter):
     def write(self):
-        for record in self.records:
+        for record in (self.format_output(r) for r in self.records):
             formatted = []
             padding = max(map(len, record.keys())) + 1
             for k, v in record.items():
@@ -45,7 +60,7 @@ class PrettyFormatter(Formatter):
 
 class JSONFormatter(Formatter):
     def write(self):
-        for record in self.records:
+        for record in (self.format_output(r) for r in self.records):
             _json.dump(record, self.handler)
             self.handler.write('\n')
 
@@ -69,15 +84,13 @@ class CSVFormatter(Formatter):
             self.record({k: self.parse_field(v) for k, v in record.items()})
         return self.records
 
-    @staticmethod
-    def fieldnames(records):
+    def fieldnames(self, records):
         fieldnames = set()
-        for rec in records:
+        for rec in (self.format_output(r) for r in records):
             fieldnames.update(set(rec.keys()))
         return sorted(list(fieldnames))
 
-    @staticmethod
-    def format_rec(record):
+    def format_rec(self, record):
         formatted = {}
         formatted.update(record)
         for k, v in record.items():
@@ -85,7 +98,7 @@ class CSVFormatter(Formatter):
                 formatted[k] = ','.join(v)
             else:
                 formatted[k] = v
-        return formatted
+        return self.format_output(formatted)
 
     @staticmethod
     def parse_field(field_val):
