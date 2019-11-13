@@ -26,3 +26,10 @@ def user_create_action(user_type, email, username, domain, groups, firstname, la
     if groups is not None:
         user.add_to_groups(groups)
     return user
+
+
+def user_delete_action(user_type, email, hard_delete=False):
+    assert user_type in USER_TYPES, "'{}' is an invalid user type".format(user_type)
+    user = umapi_client.UserAction(USER_TYPES[user_type], email)
+    user.remove_from_organization(hard_delete)
+    return user

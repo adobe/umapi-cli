@@ -182,3 +182,24 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
         umapi_conn.execute_single(user_action)
         click.echo("errors: {}".format(user_action.execution_errors()))
     umapi_conn.execute_queued()
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+              default='main', show_default=True)
+@click.option('-e', '--email', help='User email address', required=True)
+@click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
+              default='federatedID', show_default=True)
+@click.option('-d', '--hard', 'hard_delete',
+              help="Delete user from underlying directory instead of just the org level",
+              default=False, show_default=False, is_flag=True)
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
+def user_delete(console_name, email, user_type, hard_delete, test_mode):
+    auth_config = config.read(console_name)
+    umapi_conn = client.create_conn(auth_config, test_mode)
+    user_action = client.user_delete_action(user_type, email, hard_delete)
+    umapi_conn.execute_single(user_action)
+    click.echo("errors: {}".format(user_action.execution_errors()))
+    umapi_conn.execute_queued()
