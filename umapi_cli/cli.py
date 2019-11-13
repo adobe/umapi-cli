@@ -145,7 +145,7 @@ def group_read_all(console_name, output_format, out_file):
 @click.option('--username', help="User's username (set to email if omitted)")
 @click.option('--domain', help="User's directory domain (set to username domain if omitted, if username is an "
                                "email, this must be set to same domain)")
-@click.option('--groups', help="Comma-delimited list of groups to assign user")
+@click.option('--groups', help="Comma-delimited list of groups to assign user", default='', show_default=False)
 @click.option('--firstname', help="User's first name")
 @click.option('--lastname', help="User's last name")
 @click.option('--country', help="User's two-letter (ISO-3166-1 alpha2) country code", required=True)
