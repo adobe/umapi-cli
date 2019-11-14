@@ -8,10 +8,13 @@ authors = ["Andrew Dorton <adorton@adobe.com>"]
 python = "^3.7"
 toml = "^0.10.0"
 click = "^7.0"
-umapi-client = "^2.12"
+umapi-client = "^2.13"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
+pyinstaller = "^3.5"
+pywin32-ctypes = "^0.2.0"
+pefile = "^2019.4"
 
 [tool.poetry.scripts]
 umapi = 'umapi_cli.cli:app'

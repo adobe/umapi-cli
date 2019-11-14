@@ -1,10 +1,10 @@
 import click
 import sys
 import umapi_client
-from . import config
-from . import client
-from . import formatter
-from . import action_queue
+from umapi_cli import config
+from umapi_cli import client
+from umapi_cli import formatter
+from umapi_cli import action_queue
 
 
 def _formatter(output_format, handler):
@@ -226,3 +226,7 @@ def user_delete_bulk(console_name, input_format, in_file, test_mode):
     queue.execute()
     for err in queue.errors():
         click.echo("Error: {}".format(err))
+
+
+if __name__ == '__main__':
+    app()

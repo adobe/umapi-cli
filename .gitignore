@@ -3,3 +3,5 @@ venv
 umapi_cli.egg-info
 .config
 __pycache__
+build
+dist
