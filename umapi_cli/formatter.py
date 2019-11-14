@@ -105,3 +105,7 @@ class CSVFormatter(Formatter):
     @classmethod
     def parse_field(cls, field_name, field_val):
         return field_val.split(',') if field_name in cls.split_fields else field_val
+
+
+def normalize(string):
+    return string.lower().strip()
