@@ -12,4 +12,4 @@ class ActionQueue:
         self.conn.execute_queued()
 
     def errors(self):
-        return [a.execution_errors() for a in self.actions]
+        return [a.execution_errors() for a in self.actions if a.execution_errors()]
