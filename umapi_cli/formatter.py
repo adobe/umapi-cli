@@ -71,6 +71,8 @@ class JSONFormatter(Formatter):
 
 
 class CSVFormatter(Formatter):
+    split_fields = ['groups']
+
     def write(self):
         if not self.records:
             return
@@ -81,7 +83,7 @@ class CSVFormatter(Formatter):
     def read(self):
         reader = _csv.DictReader(self.handler)
         for record in reader:
-            self.record({k: self.parse_field(v) for k, v in record.items()})
+            self.record({k: self.parse_field(k, v) for k, v in record.items()})
         return self.records
 
     def fieldnames(self, records):
@@ -100,6 +102,6 @@ class CSVFormatter(Formatter):
                 formatted[k] = v
         return self.format_output(formatted)
 
-    @staticmethod
-    def parse_field(field_val):
-        return field_val.split(',') if ',' in field_val else field_val
+    @classmethod
+    def parse_field(cls, field_name, field_val):
+        return field_val.split(',') if field_name in cls.split_fields else field_val
