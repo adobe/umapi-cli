@@ -64,7 +64,7 @@ def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, consol
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
@@ -84,7 +84,7 @@ def user_read(console_name, output_format, email):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
@@ -102,7 +102,7 @@ def user_read_all(console_name, output_format, out_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
@@ -120,7 +120,7 @@ def group_read(console_name, output_format, group_name):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
@@ -138,7 +138,7 @@ def group_read_all(console_name, output_format, out_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
               default='federatedID', show_default=True)
@@ -164,7 +164,7 @@ def user_create(console_name, user_type, email, username, domain, groups, firstn
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
               show_default=True)
@@ -187,7 +187,7 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
+@click.option('-c', '--console-name', help='Short name of the integration config',
               default='main', show_default=True)
 @click.option('-e', '--email', help='User email address', required=True)
 @click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
@@ -204,3 +204,25 @@ def user_delete(console_name, email, user_type, hard_delete, test_mode):
     queue.queue_delete_action(user_type, email, hard_delete)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name of the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
+              show_default=True)
+@click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
+def user_delete_bulk(console_name, input_format, in_file, test_mode):
+    fmtr = _formatter(input_format, _input_handler(in_file))
+    auth_config = config.read(console_name)
+    umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
+    for user in fmtr.read():
+        queue.queue_delete_action(user['type'], user['email'],
+                                  True if user['hard_delete'].strip().lower() == 'y' else False)
+    queue.execute()
+    for err in queue.errors():
+        click.echo("Error: {}".format(err))
