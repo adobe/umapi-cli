@@ -4,6 +4,7 @@ import umapi_client
 from . import config
 from . import client
 from . import formatter
+from . import action_queue
 
 
 def _formatter(output_format, handler):
@@ -154,11 +155,12 @@ def group_read_all(console_name, output_format, out_file):
 def user_create(console_name, user_type, email, username, domain, groups, firstname, lastname, country, test_mode):
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
     user = client.user_create_action(user_type, email, username, domain, groups.split(','), firstname, lastname,
                                      country)
-    umapi_conn.execute_single(user)
-    umapi_conn.execute_queued()
-    click.echo("errors: {}".format(user.execution_errors()))
+    queue.push(user)
+    queue.execute()
+    click.echo("errors: {}".format(queue.errors()))
 
 
 @app.command()
@@ -174,14 +176,16 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
     fmtr = _formatter(input_format, _input_handler(in_file))
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
     for user in fmtr.read():
         user_action = client.user_create_action(user_type=user['type'], email=user['email'], username=user['username'],
                                                 domain=user['domain'], groups=user['groups'],
                                                 firstname=user['firstname'], lastname=user['lastname'],
                                                 country=user['country'])
-        umapi_conn.execute_single(user_action)
-        click.echo("errors: {}".format(user_action.execution_errors()))
-    umapi_conn.execute_queued()
+        queue.push(user_action)
+    queue.execute()
+    for err in queue.errors():
+        click.echo("Error: {}".format(err))
 
 
 @app.command()
@@ -199,7 +203,8 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
 def user_delete(console_name, email, user_type, hard_delete, test_mode):
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
     user_action = client.user_delete_action(user_type, email, hard_delete)
-    umapi_conn.execute_single(user_action)
-    click.echo("errors: {}".format(user_action.execution_errors()))
-    umapi_conn.execute_queued()
+    queue.push(user_action)
+    queue.execute()
+    click.echo("errors: {}".format(queue.errors()))
