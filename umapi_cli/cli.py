@@ -156,9 +156,8 @@ def user_create(console_name, user_type, email, username, domain, groups, firstn
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
-    user = client.user_create_action(user_type, email, username, domain, groups.split(','), firstname, lastname,
-                                     country)
-    queue.push(user)
+    queue.queue_user_action(user_type, email, username, domain, groups.split(','), firstname, lastname,
+                            country)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 
@@ -178,11 +177,9 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
     for user in fmtr.read():
-        user_action = client.user_create_action(user_type=user['type'], email=user['email'], username=user['username'],
-                                                domain=user['domain'], groups=user['groups'],
-                                                firstname=user['firstname'], lastname=user['lastname'],
-                                                country=user['country'])
-        queue.push(user_action)
+        queue.queue_user_action(user_type=user['type'], email=user['email'], username=user['username'],
+                                domain=user['domain'], groups=user['groups'], firstname=user['firstname'],
+                                lastname=user['lastname'], country=user['country'])
     queue.execute()
     for err in queue.errors():
         click.echo("Error: {}".format(err))
@@ -204,7 +201,6 @@ def user_delete(console_name, email, user_type, hard_delete, test_mode):
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
-    user_action = client.user_delete_action(user_type, email, hard_delete)
-    queue.push(user_action)
+    queue.queue_delete_action(user_type, email, hard_delete)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
