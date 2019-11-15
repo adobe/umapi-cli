@@ -47,7 +47,7 @@ def app():
               prompt='Delete private key file?', default=False)
 @click.option('-c', '--console-name', help='Short name to assign to the integration config',
               default='main', show_default=True)
-@click.option('-o', 'overwrite', help="Overwrite existing config",
+@click.option('-o', 'overwrite', help="Overwrite existing config", is_flag=True, show_default=False,
               default=False)
 def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, console_name, overwrite):
     """Initialize a new UMAPI client config"""
@@ -153,6 +153,7 @@ def group_read_all(console_name, output_format, out_file):
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
 def user_create(console_name, user_type, email, username, domain, groups, firstname, lastname, country, test_mode):
+    """Create a single user"""
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
@@ -172,6 +173,7 @@ def user_create(console_name, user_type, email, username, domain, groups, firstn
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
 def user_create_bulk(console_name, input_format, in_file, test_mode):
+    """Create users in bulk from an input file"""
     fmtr = _formatter(input_format, _input_handler(in_file))
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
@@ -198,6 +200,7 @@ def user_create_bulk(console_name, input_format, in_file, test_mode):
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
 def user_delete(console_name, email, user_type, hard_delete, test_mode):
+    """Delete a single user (from org and/or identity directory)"""
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
@@ -216,6 +219,7 @@ def user_delete(console_name, email, user_type, hard_delete, test_mode):
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
 def user_delete_bulk(console_name, input_format, in_file, test_mode):
+    """Delete users in bulk from input file (from org and/or identity directory)"""
     fmtr = _formatter(input_format, _input_handler(in_file))
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
