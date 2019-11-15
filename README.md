@@ -1,6 +1,6 @@
 # User Management API CLI Tool
 
-A simple command-line interface (CLI) client to the Adobe User Management API.
+A simple command-line interface (CLI) client to the [Adobe User Management API](https://adobe-apiplatform.github.io/umapi-documentation/en/).
 
 ## Feature Overview
 
@@ -34,7 +34,7 @@ Bulk create/update/delete formats:
 1. Clone this repo - `git clone git@git.corp.adobe.com:dmeservices/umapi-cli.git`
 2. `cd umapi-cli`
 3. Create a virtual environment - `python -m venv venv` (Python 3.7 or greater required)
-4. Activate it `.\venv\Scripts\Activate.ps1` or `source venv/bin/sctivate`
+4. Activate it `.\venv\Scripts\Activate.ps1` or `source venv/bin/activate`
 5. Install [Poetry](https://poetry.eustace.io/)
 6. Install dependencies `poetry install`
 7. An executable will be created in `venv\Scripts` or `venv/bin` called `umapi` - use this command to run the tool
@@ -48,7 +48,7 @@ Since they embed Python, they are inherently a bit slower to run than the packag
 
 The tool operates on a series of commands.
 
-```shell script
+```
 $ umapi --help
 Usage: umapi [OPTIONS] COMMAND [ARGS]...
 
@@ -75,6 +75,11 @@ working directory** (under `.config/`).
 This ensures that the `.config` directory does not conflict with any system-related config
 directories.
 
+UMAPI operation commands use the form `noun-verb[-modifier]` (e.g. `user-read` or `group-update-bulk`).
+
+All UMAPI operation commands implement `-c/--console-name` to target alternate Admin Console
+connections.
+
 ### `init`
 
 Initialize a new UMAPI client configuration. Will prompt for required UMAPI integration details.
@@ -92,7 +97,7 @@ piece of UMAPI configuration it needs and store this in a config file called "ma
 Additional UMAPI connections can be configured by setting the `-c` or `--console-name` option.
 The console name should be a short alphanumeric identifier (e.g. `-c stock_console`).
 
-```shell script
+```
 $  umapi init
 Organization ID: [org id]
 Tech Account ID: [tech account ID (not email)]
@@ -104,7 +109,7 @@ Delete private key file? [y/N]: y
 
 These configuration items can also be set as options to avoid the interactive prompt.
 
-```shell script
+```
 $  umapi init --help
 Usage: umapi init [OPTIONS]
 
@@ -121,4 +126,38 @@ Options:
   -c, --console-name TEXT  Short name to assign to the integration config
                            [default: main]
   -o                       Overwrite existing config
+```
+
+### `user-read`
+
+Get details for a single user by email address. 
+
+Formats: JSON, CSV, or human-readable (default.)
+
+```
+$  umapi user-read -e user@example.com
+email     : user@example.com
+groups    : ['All Apps', 'Adobe Stock']
+username  : user@example.com
+domain    : example.com
+firstname : Example
+lastname  : User
+country   : US
+type      : federatedID
+```
+
+Usage:
+
+```
+$  umapi user-read --help
+Usage: umapi user-read [OPTIONS]
+
+  Get details for a single user
+
+Options:
+  -h, --help                    Show this message and exit.
+  -c, --console-name TEXT       Short name of the integration config
+                                [default: main]
+  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -e, --email TEXT              User email address  [required]
 ```
