@@ -2,40 +2,51 @@ import json as _json
 import csv as _csv
 
 
-def pretty(handler):
-    return PrettyFormatter(handler)
+def pretty(handler, record_type):
+    return PrettyFormatter(handler, record_type)
 
 
-def json(handler):
-    return JSONFormatter(handler)
+def json(handler, record_type):
+    return JSONFormatter(handler, record_type)
 
 
-def csv(handler):
-    return CSVFormatter(handler)
+def csv(handler, record_type):
+    return CSVFormatter(handler, record_type)
 
 
 class Formatter:
-    output_format = [
-        "country",
-        "domain",
-        "email",
-        "username",
-        "firstname",
-        "lastname",
-        "groups",
-        "type",
-    ]
+    output_format = {
+        'user': [
+            "country",
+            "domain",
+            "email",
+            "username",
+            "firstname",
+            "lastname",
+            "groups",
+            "type",
+        ],
+        'group': [
+            'groupName',
+            'type',
+            'adminGroupName',
+            'memberCount',
+            'productName',
+            'licenseQuota',
+        ]
+    }
 
-    def __init__(self, handler):
+    def __init__(self, handler, record_type):
+        assert record_type in ['user', 'group'], "Invalid record_type"
+        self.record_type = record_type
         self.records = []
         self.handler = handler
 
     def record(self, record):
         self.records.append(record)
 
-    @classmethod
-    def format_output(cls, record):
-        return {k: v for k, v in record.items() if k in cls.output_format}
+    def format_output(self, record):
+        return {k: v for k, v in record.items() if k in self.output_format[self.record_type]}
 
     def write(self):
         pass

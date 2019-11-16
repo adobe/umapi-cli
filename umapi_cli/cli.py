@@ -5,14 +5,15 @@ from umapi_cli import config
 from umapi_cli import client
 from umapi_cli import formatter
 from umapi_cli import action_queue
+from umapi_cli.formatter import normalize
 
 
-def _formatter(output_format, handler):
+def _formatter(output_format, handler, record_type):
     fmtr_class = getattr(formatter, output_format, None)
     if fmtr_class is None:
         click.echo("Unknown format '{}'".format(output_format))
         sys.exit(1)
-    return fmtr_class(handler)
+    return fmtr_class(handler, record_type)
 
 
 def _output_handler(out_file=None):
@@ -71,7 +72,7 @@ def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, consol
 @click.option('-e', '--email', help='User email address', required=True)
 def user_read(console_name, output_format, email):
     """Get details for a single user"""
-    fmtr = _formatter(output_format, _output_handler())
+    fmtr = _formatter(output_format, _output_handler(), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, False)
     user = umapi_client.UserQuery(umapi_conn, email).result()
@@ -91,7 +92,7 @@ def user_read(console_name, output_format, email):
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
 def user_read_all(console_name, output_format, out_file):
     """Get details for all users belonging to a console"""
-    fmtr = _formatter(output_format, _output_handler(out_file))
+    fmtr = _formatter(output_format, _output_handler(out_file), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, False)
     query = umapi_client.UsersQuery(umapi_conn)
@@ -109,11 +110,11 @@ def user_read_all(console_name, output_format, out_file):
 @click.option('-g', '--group', 'group_name', help='Group name', required=True)
 def group_read(console_name, output_format, group_name):
     """Get details for a single user group"""
-    fmtr = _formatter(output_format, _output_handler())
+    fmtr = _formatter(output_format, _output_handler(), 'group')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, False)
     query = umapi_client.GroupsQuery(umapi_conn)
-    group,  = [g for g in query if g['groupName'].lower() == group_name.lower()]
+    group,  = [g for g in query if normalize(g['groupName']) == normalize(group_name)]
     fmtr.record(group)
     fmtr.write()
 
@@ -127,7 +128,7 @@ def group_read(console_name, output_format, group_name):
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
 def group_read_all(console_name, output_format, out_file):
     """Get details for all groups in a console"""
-    fmtr = _formatter(output_format, _output_handler(out_file))
+    fmtr = _formatter(output_format, _output_handler(out_file), 'group')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, False)
     query = umapi_client.GroupsQuery(umapi_conn)
@@ -174,7 +175,7 @@ def user_create(console_name, user_type, email, username, domain, groups, firstn
               is_flag=True)
 def user_create_bulk(console_name, input_format, in_file, test_mode):
     """Create users in bulk from an input file"""
-    fmtr = _formatter(input_format, _input_handler(in_file))
+    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
@@ -220,7 +221,7 @@ def user_delete(console_name, email, user_type, hard_delete, test_mode):
               is_flag=True)
 def user_delete_bulk(console_name, input_format, in_file, test_mode):
     """Delete users in bulk from input file (from org and/or identity directory)"""
-    fmtr = _formatter(input_format, _input_handler(in_file))
+    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
