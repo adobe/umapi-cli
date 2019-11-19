@@ -22,12 +22,12 @@ create users in bulk from an input file).
 
 * Human-readable
 * CSV
-* [jsonl](http://jsonlines.org)
+* [JSON](http://jsonlines.org)
 
 Bulk create/update/delete formats:
 
 * CSV
-* [jsonl](http://jsonlines.org)
+* [JSON](http://jsonlines.org)
 
 ## Running in Development (Recommended)
 
@@ -166,7 +166,7 @@ Options:
 
 Get details for all users in a given console. 
 
-Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default.)
+Formats: [JSON](http://jsonlines.org), CSV, or human-readable (default.)
 
 This command writes to stdout by default, but can optionally write output to a given filename.
 
@@ -233,7 +233,7 @@ Options:
 
 Create users in bulk from an input file.
 
-Formats: [JSONL](http://jsonlines.org) or CSV (default)
+Formats: [JSON](http://jsonlines.org) or CSV (default)
 
 Expects `-i/--in-file` option that specifies input file path.
 
@@ -249,6 +249,78 @@ $ umapi user-create-bulk --help
 Usage: umapi user-create-bulk [OPTIONS]
 
   Create users in bulk from an input file
+
+Options:
+  -h, --help               Show this message and exit.
+  -c, --console-name TEXT  Short name of the integration config  [default:
+                           main]
+  -f, --format csv|json    Input file format  [default: csv]
+  -i, --in-file FILENAME   Input filename
+  -t, --test               Run command in test mode
+```
+
+### `user-delete`
+
+Delete a single user from a given Admin Console.
+
+There are two kinds of deletion:
+
+* **soft** - remove the user from the Console user list, but not the underlying identity directory (default)
+* **hard** - remove the user from the underlying identity directory (the "Directory Users" list)
+
+**NOTE:** Hard-deleting may only be done on the Console that owns the directory. Trusted 
+directories only support soft-deletion. Hard-deleting a user will delete **all** cloud
+assets associated with the user.
+
+```
+# soft-delete user test.user.001@example.com
+$ umapi user-delete --email test.user.001@example.com
+```
+
+Usage:
+
+```
+$ umapi user-delete --help
+Usage: umapi user-delete [OPTIONS]
+
+  Delete a single user (from org and/or identity directory)
+
+Options:
+  -h, --help                      Show this message and exit.
+  -c, --console-name TEXT         Short name of the integration config
+                                  [default: main]
+  -e, --email TEXT                User email address  [required]
+  --type adobeID|enterpriseID|federatedID
+                                  User's identity type  [default: federatedID]
+  -d, --hard                      Delete user from underlying directory
+                                  instead of just the org level
+  -t, --test                      Run command in test mode
+```
+
+### `user-delete-bulk`
+
+Delete a list of users from an input file.
+
+Formats: [JSON](http://jsonlines.org) or CSV (default)
+
+See [notes above](#user-delete) about deletion types.
+
+Expects `-i/--in-file` option that specifies input file path.
+
+See [format spec](#user-delete-bulk-1) below for column/field spec.
+
+```
+# delete all users specified in "delete_users.csv"
+$ user-delete-bulk -i delete_users.csv
+```
+
+Usage:
+
+```
+$ umapi user-delete-bulk --help
+Usage: umapi user-delete-bulk [OPTIONS]
+
+  Delete users in bulk from input file (from org and/or identity directory)
 
 Options:
   -h, --help               Show this message and exit.
@@ -293,7 +365,7 @@ Options:
 
 Get details for all groups in a given console.
 
-Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default.)
+Formats: [JSON](http://jsonlines.org), CSV, or human-readable (default.)
 
 This command writes to stdout by default, but can optionally write output to a given filename.
 
@@ -341,8 +413,18 @@ format.
 ### `user-create-bulk`
 
 `user-create-bulk` expects the same fields as those documented in the output format for
-`user-read` and `user-read-all`. Both CSV and JSONL follow the same field name spec with
+`user-read` and `user-read-all`. Both CSV and JSON follow the same field name spec with
 the following exceptions.
 
 * In CSV input files, the `groups` field should be a comma-delimited list of group names
-* In JSONL, `groups` is an array of group names
+* In JSON, `groups` is an array of group names
+
+### `user-delete-bulk`
+
+Expected fields are the same for the CSV and JSON formats.
+
+| field | notes |
+|---|---|
+| `type` | Identity type (required for validation purposes) |
+| `email` | Email address of user |
+| `hard_delete` | `Y` or `y` to hard-delete user. Any other value will soft-delete. |
