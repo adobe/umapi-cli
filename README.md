@@ -161,3 +161,171 @@ Options:
   -f, --format csv|json|pretty  Output format  [default: pretty]
   -e, --email TEXT              User email address  [required]
 ```
+
+### `user-read-all`
+
+Get details for all users in a given console. 
+
+Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default.)
+
+This command writes to stdout by default, but can optionally write output to a given filename.
+
+```
+# write all users to a CSV file
+$ umapi user-read-all -f csv -o users.csv
+```
+
+Usage:
+
+```
+$  umapi user-read-all --help
+Usage: umapi user-read-all [OPTIONS]
+
+  Get details for all users belonging to a console
+
+Options:
+  -h, --help                    Show this message and exit.
+  -c, --console-name TEXT       Short name of the integration config
+                                [default: main]
+  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -o, --out-file FILENAME       Write output to this filename
+```
+
+### `user-create`
+
+Create a single user.
+
+```
+$ umapi user-create --type federatedID --email test.user.001@example.com \
+  --username test.user.001@example.com --groups "All Apps,Adobe Sign" \
+  --firstname Test --lastname "User 001" --country US
+```
+
+Usage:
+
+```
+$ umapi user-create --help
+Usage: umapi user-create [OPTIONS]
+
+  Create a single user
+
+Options:
+  -h, --help                      Show this message and exit.
+  -c, --console-name TEXT         Short name of the integration config
+                                  [default: main]
+  --type adobeID|enterpriseID|federatedID
+                                  User's identity type  [default: federatedID]
+  --email TEXT                    User's email address  [required]
+  --username TEXT                 User's username (set to email if omitted)
+  --domain TEXT                   User's directory domain (set to username
+                                  domain if omitted, if username is an email,
+                                  this must be set to same domain)
+  --groups TEXT                   Comma-delimited list of groups to assign
+                                  user
+  --firstname TEXT                User's first name
+  --lastname TEXT                 User's last name
+  --country TEXT                  User's two-letter (ISO-3166-1 alpha2)
+                                  country code  [required]
+  -t, --test                      Run command in test mode
+```
+
+### `user-create-bulk`
+
+Create users in bulk from an input file.
+
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
+
+Expects `-i/--in-file` option that specifies input file path.
+
+```
+# create all users specified in "users.csv"
+$ umapi user-create-bulk -f csv -i users.csv
+```
+
+### `group-read`
+
+Get details for a single group based on a given group name.
+
+```
+$ umapi group-read -g 'Adobe Sign'
+groupName      : Adobe Sign
+type           : PRODUCT_PROFILE
+adminGroupName : _admin_Adobe Sign
+memberCount    : 3
+productName    : Adobe Sign-Enterprise
+licenseQuota   : 10
+```
+
+Usage:
+
+```
+$ umapi group-read --help
+Usage: umapi group-read [OPTIONS]
+
+  Get details for a single user group
+
+Options:
+  -h, --help                    Show this message and exit.
+  -c, --console-name TEXT       Short name of the integration config
+                                [default: main]
+  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -g, --group TEXT              Group name  [required]
+```
+
+### `group-read-all`
+
+Get details for all groups in a given console.
+
+Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default.)
+
+This command writes to stdout by default, but can optionally write output to a given filename.
+
+```
+# write all groups to a CSV file
+$ umapi user-group-all -f csv -o groups.csv
+```
+
+Usage:
+
+```
+$ umapi group-read-all --help
+Usage: umapi group-read-all [OPTIONS]
+
+  Get details for all groups in a console
+
+Options:
+  -h, --help                    Show this message and exit.
+  -c, --console-name TEXT       Short name of the integration config
+                                [default: main]
+  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -o, --out-file FILENAME       Write output to this filename
+```
+
+## Formats
+
+The input and output formats of each UMAPI operation command.
+
+### `user-read` and `user-read-all`
+
+`user-read` and `user-read-all` output the same columns for each user regardless of output
+format.
+
+| field | notes |
+|---|---|
+| `firstname` | User's first name |
+| `lastname` | User's surname |
+| `email` | User's email address |
+| `username` | User's username |
+| `domain` | User's domain (governs which Admin Console directory membership) |
+| `type` | Account type `federateID`, `enterpriseID` or `adobeID` |
+| `country` | User's ISO-3166-1 alpha-2 country code |
+| `groups` | List of groups assigned (or to be assigned) to the user |
+
+### `user-create-bulk`
+
+`user-create-bulk` expects the same fields as those documented in the output format for
+`user-read` and `user-read-all`. Both CSV and JSONL follow the same field name spec with
+the following exceptions.
+
+* In CSV input files, the `groups` field should be a comma-delimited list of group names
+* In JSONL, `groups` is an array of group names
