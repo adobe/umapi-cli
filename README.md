@@ -98,7 +98,7 @@ Additional UMAPI connections can be configured by setting the `-c` or `--console
 The console name should be a short alphanumeric identifier (e.g. `-c stock_console`).
 
 ```
-$  umapi init
+$ umapi init
 Organization ID: [org id]
 Tech Account ID: [tech account ID (not email)]
 API Key: [api key]
@@ -110,7 +110,7 @@ Delete private key file? [y/N]: y
 These configuration items can also be set as options to avoid the interactive prompt.
 
 ```
-$  umapi init --help
+$ umapi init --help
 Usage: umapi init [OPTIONS]
 
   Initialize a new UMAPI client config
@@ -135,7 +135,7 @@ Get details for a single user by email address.
 Formats: JSON, CSV, or human-readable (default.)
 
 ```
-$  umapi user-read -e user@example.com
+$ umapi user-read -e user@example.com
 email     : user@example.com
 groups    : ['All Apps', 'Adobe Stock']
 username  : user@example.com
@@ -149,7 +149,7 @@ type      : federatedID
 Usage:
 
 ```
-$  umapi user-read --help
+$ umapi user-read --help
 Usage: umapi user-read [OPTIONS]
 
   Get details for a single user
@@ -178,7 +178,7 @@ $ umapi user-read-all -f csv -o users.csv
 Usage:
 
 ```
-$  umapi user-read-all --help
+$ umapi user-read-all --help
 Usage: umapi user-read-all [OPTIONS]
 
   Get details for all users belonging to a console
@@ -240,6 +240,23 @@ Expects `-i/--in-file` option that specifies input file path.
 ```
 # create all users specified in "users.csv"
 $ umapi user-create-bulk -f csv -i users.csv
+```
+
+Usage:
+
+```
+$ umapi user-create-bulk --help
+Usage: umapi user-create-bulk [OPTIONS]
+
+  Create users in bulk from an input file
+
+Options:
+  -h, --help               Show this message and exit.
+  -c, --console-name TEXT  Short name of the integration config  [default:
+                           main]
+  -f, --format csv|json    Input file format  [default: csv]
+  -i, --in-file FILENAME   Input filename
+  -t, --test               Run command in test mode
 ```
 
 ### `group-read`
