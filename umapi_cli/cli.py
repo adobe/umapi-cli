@@ -233,5 +233,52 @@ def user_delete_bulk(console_name, input_format, in_file, test_mode):
         click.echo("Error: {}".format(err))
 
 
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name of the integration config',
+              default='main', show_default=True)
+@click.option('-e', '--email', help='User email address', required=True)
+@click.option('-E', '--email-new', help="User's new email address", required=False)
+@click.option('-f', '--firstname', help="User's first name", required=False)
+@click.option('-l', '--lastname', help="User's last name", required=False)
+@click.option('-u', '--username', help="User's username", required=False)
+@click.option('-C', '--country', help="User's country code", required=False)
+@click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
+              default='federatedID', show_default=True)
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
+def user_update(console_name, email, email_new, firstname, lastname, username, country, user_type, test_mode):
+    """Update user information for a single user"""
+    auth_config = config.read(console_name)
+    umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
+    queue.queue_update_action(user_type, email, email_new, firstname, lastname, username, country)
+    queue.execute()
+    click.echo("errors: {}".format(queue.errors()))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-c', '--console-name', help='Short name of the integration config',
+              default='main', show_default=True)
+@click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
+              show_default=True)
+@click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
+def user_update_bulk(console_name, input_format, in_file, test_mode):
+    """Update users in bulk from input file"""
+    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
+    auth_config = config.read(console_name)
+    umapi_conn = client.create_conn(auth_config, test_mode)
+    queue = action_queue.ActionQueue(umapi_conn)
+    for user in fmtr.read():
+        queue.queue_update_action(user['type'], user['email'], user['email_new'], user['firstname'],
+                                  user['lastname'], user['username'], user['country'])
+    queue.execute()
+    for err in queue.errors():
+        click.echo("Error: {}".format(err))
+
+
 if __name__ == '__main__':
     app()

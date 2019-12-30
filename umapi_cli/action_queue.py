@@ -49,3 +49,13 @@ class ActionQueue:
         user = umapi_client.UserAction(self.USER_TYPES[user_type], email)
         user.remove_from_organization(hard_delete)
         self.push(user)
+
+    def queue_update_action(self, user_type, email, email_new, firstname, lastname, username, country):
+        assert user_type in self.USER_TYPES, "'{}' is an invalid user type".format(user_type)
+        if not email_new:
+            email_new = email
+        if email_new == username:
+            username = None
+        user = umapi_client.UserAction(self.USER_TYPES[user_type], email)
+        user.update(email_new, username, firstname, lastname, country)
+        self.push(user)
