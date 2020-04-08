@@ -33,11 +33,9 @@ Bulk create/update/delete formats:
 
 1. Clone this repo - `git clone git@git.corp.adobe.com:dmeservices/umapi-cli.git`
 2. `cd umapi-cli`
-3. Create a virtual environment - `python -m venv venv` (Python 3.7 or greater required)
-4. Activate it `.\venv\Scripts\Activate.ps1` or `source venv/bin/activate`
-5. Install [Poetry](https://poetry.eustace.io/)
-6. Install dependencies `poetry install`
-7. An executable will be created in `venv\Scripts` or `venv/bin` called `umapi` - use this command to run the tool
+3. Install [Poetry](https://poetry.eustace.io/)
+4. Install dependencies `poetry install` (this command creates a unique virtual environment)
+5. Run the tool with `poetry run umapi`
 
 ## Running the Executable
 
