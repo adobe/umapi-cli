@@ -5,3 +5,4 @@ umapi_cli.egg-info
 __pycache__
 build
 dist
+.vscode
