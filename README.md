@@ -257,6 +257,39 @@ Options:
   -t, --test               Run command in test mode
 ```
 
+### `user-update`
+
+Update a single user.
+
+```
+$ umapi user-update --email test.user.001@example.com --firstname Test \
+  --lastname "Username 001"
+```
+
+Usage:
+
+```
+$ umapi user-update --help
+Usage: umapi user-update [OPTIONS]
+
+  Update user information for a single user
+
+Options:
+  -h, --help                      Show this message and exit.
+  -c, --console-name TEXT         Short name of the integration config
+                                  [default: main]
+
+  -e, --email TEXT                User email address  [required]
+  -E, --email-new TEXT            User's new email address
+  -f, --firstname TEXT            User's first name
+  -l, --lastname TEXT             User's last name
+  -u, --username TEXT             User's username
+  -C, --country TEXT              User's country code
+  --type adobeID|enterpriseID|federatedID
+                                  User's identity type  [default: federatedID]
+  -t, --test                      Run command in test mode
+```
+
 ### `user-delete`
 
 Delete a single user from a given Admin Console.
