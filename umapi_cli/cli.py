@@ -1,12 +1,14 @@
 import click
 import sys
 import umapi_client
-from umapi_cli import config
-from umapi_cli import client
-from umapi_cli import formatter
-from umapi_cli import action_queue
-from umapi_cli.formatter import normalize
+from . import config
+from . import client
+from . import formatter
+from . import action_queue
+from .formatter import normalize
+from . import log
 
+log.init()
 
 def _formatter(output_format, handler, record_type):
     fmtr_class = getattr(formatter, output_format, None)
