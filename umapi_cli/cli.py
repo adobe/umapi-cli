@@ -38,8 +38,8 @@ def app():
               prompt='Organization ID')
 @click.option('--tech-acct', help="Tech Account ID",
               prompt='Tech Account ID')
-@click.option('--api-key', help="API Key",
-              prompt='API Key')
+@click.option('--api-key', help="Client ID (API Key)",
+              prompt='Client ID (API Key)')
 @click.option('--client-secret', help="Client Secret",
               prompt='Client Secret')
 @click.option('--priv-key', help="Private Key Path",
