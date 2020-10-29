@@ -98,7 +98,12 @@ def user_read_all(console_name, output_format, out_file):
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, False)
     query = umapi_client.UsersQuery(umapi_conn)
+    report_total = True
     for user in query:
+        total, *_ = query.stats()
+        if total is not None and report_total:
+            log.info(f"Total records: {total}")
+            report_total = False
         fmtr.record(user)
     fmtr.write()
 

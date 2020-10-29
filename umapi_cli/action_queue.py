@@ -1,6 +1,7 @@
 import re
 import umapi_client
 from .formatter import normalize
+from . import log
 
 
 class ActionQueue:
@@ -19,9 +20,15 @@ class ActionQueue:
         self.actions.append(user_action)
 
     def execute(self):
+        completed = 0
+        queued = len(self.actions)
+        log.info(f'Number of actions to execute: {len(self.actions)}')
         for action in self.actions:
-            self.conn.execute_single(action)
-        self.conn.execute_queued()
+            _, _, c = self.conn.execute_single(action)
+            if c > 0:
+                completed += c
+                log.info(f"Completion: {completed}/{queued} ({round(completed/queued*100, 2)}%)")
+        _, _, c = self.conn.execute_queued()
 
     def errors(self):
         return [a.execution_errors() for a in self.actions if a.execution_errors()]
