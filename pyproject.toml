@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "umapi-cli"
-version = "0.5.0"
+version = "0.6.1"
 description = "User Management API CLI Tool"
 authors = ["Andrew Dorton <adorton@adobe.com>"]
 
