@@ -1,10 +1,12 @@
 import click
 import sys
 import umapi_client
+import dotenv
+from pathlib import Path
 from . import config
 from . import client
 from . import formatter
-from . import action_queue
+# from . import action_queue
 from .formatter import normalize
 from . import log
 
@@ -29,54 +31,31 @@ def _input_handler(in_file):
 
 
 @click.group()
+@click.option('--env', 'env_file', help="Path to .env file (optional)", default=None, type=click.Path())
+@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
+              is_flag=True)
 @click.help_option('-h', '--help')
-def app():
-    pass
+@click.pass_context
+def app(ctx, env_file, test_mode):
+    if env_file is not None:
+        dotenv.load_dotenv(env_file)
+    else:
+        dotenv.load_dotenv()
+    ctx.ensure_object(dict)
+    conf = config.get_options()
+    ctx.obj['conn'] = client.create_conn(conf, test_mode)
 
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('--org-id', help="Organization ID",
-              prompt='Organization ID')
-@click.option('--tech-acct', help="Tech Account ID",
-              prompt='Tech Account ID')
-@click.option('--api-key', help="Client ID (API Key)",
-              prompt='Client ID (API Key)')
-@click.option('--client-secret', help="Client Secret",
-              prompt='Client Secret')
-@click.option('--priv-key', help="Private Key Path",
-              prompt='Private Key Path', default='private.key')
-@click.option('-d/-D', 'delete_key', help="Delete private key file (or do not delete it)",
-              prompt='Delete private key file?', default=False)
-@click.option('-c', '--console-name', help='Short name to assign to the integration config',
-              default='main', show_default=True)
-@click.option('-o', 'overwrite', help="Overwrite existing config", is_flag=True, show_default=False,
-              default=False)
-def init(org_id, tech_acct, api_key, client_secret, priv_key, delete_key, console_name, overwrite):
-    """Initialize a new UMAPI client config"""
-    if config.exists(console_name):
-        confirm_overwrite = overwrite or click.confirm(
-            "Overwrite config for '{}'?".format(console_name), default=False)
-        if not confirm_overwrite:
-            click.echo("Can't overwrite config for '{}'".format(console_name))
-            sys.exit(1)
-
-    config_filename = config.init(console_name, org_id, tech_acct, api_key, client_secret, priv_key, delete_key)
-    click.echo("'{}' initialized at {}".format(console_name, config_filename))
-
-
-@app.command()
-@click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
 @click.option('-e', '--email', help='User email address', required=True)
-def user_read(console_name, output_format, email):
+@click.pass_context
+def user_read(ctx, output_format, email):
     """Get details for a single user"""
     fmtr = _formatter(output_format, _output_handler(), 'user')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, False)
+    umapi_conn = ctx.obj['conn']
     user = umapi_client.UserQuery(umapi_conn, email).result()
     if not user:
         click.echo('No user found')
