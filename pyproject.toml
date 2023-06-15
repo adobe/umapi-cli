@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "umapi-cli"
-version = "0.6.1"
+version = "0.7.0"
 description = "User Management API CLI Tool"
 authors = ["Andrew Dorton <adorton@adobe.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.9"
 toml = "^0.10.0"
 click = "^7.0"
-umapi-client = "^2.15"
+umapi-client = "^3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
