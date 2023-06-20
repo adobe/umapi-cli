@@ -10,7 +10,7 @@ from . import formatter
 from .formatter import normalize
 from . import log
 
-log.init()
+# log.init()
 
 def _formatter(output_format, handler, record_type):
     fmtr_class = getattr(formatter, output_format, None)
