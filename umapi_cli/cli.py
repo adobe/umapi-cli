@@ -6,12 +6,10 @@ from pathlib import Path
 from . import config
 from . import client
 from . import formatter
-# from . import action_queue
+from .action_queue import ActionQueue
 from .formatter import normalize
 from . import log
 from .version import __version__ as app_version
-
-# log.init()
 
 def _formatter(output_format, handler, record_type):
     fmtr_class = getattr(formatter, output_format, None)
@@ -35,10 +33,12 @@ def _input_handler(in_file):
 @click.option('--env', 'env_file', help="Path to .env file (optional)", default=None, type=click.Path())
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
+@click.option('-v', count=True)
 @click.help_option('-h', '--help')
-@click.version_option(app_version, '-v', '--version', message='%(prog)s %(version)s')
+@click.version_option(app_version, '--version', message='%(prog)s %(version)s')
 @click.pass_context
-def app(ctx, env_file, test_mode):
+def app(ctx, env_file, test_mode, v):
+    log.init(v)
     if env_file is not None:
         dotenv.load_dotenv(env_file)
     else:
@@ -126,8 +126,6 @@ def group_read_all(ctx, output_format, out_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
               default='federatedID', show_default=True)
 @click.option('--email', help="User's email address", required=True)
@@ -138,15 +136,25 @@ def group_read_all(ctx, output_format, out_file):
 @click.option('--firstname', help="User's first name")
 @click.option('--lastname', help="User's last name")
 @click.option('--country', help="User's two-letter (ISO-3166-1 alpha2) country code", required=True)
-@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
-              is_flag=True)
-def user_create(console_name, user_type, email, username, domain, groups, firstname, lastname, country, test_mode):
-    """Create a single user"""
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, test_mode)
-    queue = action_queue.ActionQueue(umapi_conn)
-    queue.queue_user_action(user_type, email, username, domain, groups.split(','), firstname, lastname,
-                            country)
+@click.pass_context
+def user_create(ctx, user_type, email, username, domain, groups, firstname, lastname, country):
+    """Create a single user
+
+       Example:
+
+       umapi user-create \
+             --type federatedID \
+             --email test.user.001@example.com \
+             --username test.username.001@example.com \
+             --groups group1,group2 \
+             --firstname Test \
+             --lastname "User 001" \
+             --country US
+    """
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    queue.queue_user_create_action(user_type, email, country, firstname, lastname,
+                                   username, domain, groups.split(','))
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 

@@ -1,16 +1,11 @@
 import re
 import umapi_client
+from umapi_client import UserAction
 from .formatter import normalize
 from . import log
 
 
 class ActionQueue:
-    USER_TYPES = {
-        'adobeID': umapi_client.IdentityTypes.adobeID,
-        'enterpriseID': umapi_client.IdentityTypes.enterpriseID,
-        'federatedID': umapi_client.IdentityTypes.federatedID,
-    }
-    VALID_COUNTRY = re.compile(r'^[a-zA-Z]{2}$')
 
     def __init__(self, conn):
         self.actions = []
@@ -33,22 +28,16 @@ class ActionQueue:
     def errors(self):
         return [a.execution_errors() for a in self.actions if a.execution_errors()]
 
-    def queue_user_action(self, user_type, email, username, domain, groups, firstname, lastname, country):
-        assert user_type in self.USER_TYPES, "'{}' is an invalid user type".format(user_type)
-        assert self.VALID_COUNTRY.match(country), "'{}' is an invalid country code format".format(country)
-
-        update_username = None
-        if (user_type == 'federatedID' and username is not None and '@' in username and normalize(email) !=
-                normalize(username)):
-            update_username = username
+    def queue_user_create_action(self, id_type, email, country, firstname=None,
+                                 lastname=None, username=None, domain=None, groups=None):
+        if username is None or len(username) == 0:
             username = email
 
-        user = umapi_client.UserAction(self.USER_TYPES[user_type], email, username, domain)
-        user.create(firstname, lastname, country, email)
+        user = UserAction(username, domain)
+
+        user.create(email, firstname, lastname, country, id_type)
         if groups is not None:
             user.add_to_groups(groups)
-        if update_username:
-            user.update(email, update_username)
         self.push(user)
 
     def queue_delete_action(self, user_type, email, hard_delete=False):
