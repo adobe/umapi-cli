@@ -9,6 +9,7 @@ from . import formatter
 # from . import action_queue
 from .formatter import normalize
 from . import log
+from .version import __version__ as app_version
 
 # log.init()
 
@@ -35,6 +36,7 @@ def _input_handler(in_file):
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
               is_flag=True)
 @click.help_option('-h', '--help')
+@click.version_option(app_version, '-v', '--version', message='%(prog)s %(version)s')
 @click.pass_context
 def app(ctx, env_file, test_mode):
     if env_file is not None:
