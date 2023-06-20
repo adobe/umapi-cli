@@ -66,16 +66,15 @@ def user_read(ctx, output_format, email):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
-def user_read_all(console_name, output_format, out_file):
+@click.pass_context
+def user_read_all(ctx, output_format, out_file):
     """Get details for all users belonging to a console"""
+
     fmtr = _formatter(output_format, _output_handler(out_file), 'user')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, False)
+    umapi_conn = ctx.obj['conn']
     query = umapi_client.UsersQuery(umapi_conn)
     report_total = True
     for user in query:
@@ -89,34 +88,34 @@ def user_read_all(console_name, output_format, out_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
 @click.option('-g', '--group', 'group_name', help='Group name', required=True)
-def group_read(console_name, output_format, group_name):
+@click.pass_context
+def group_read(ctx, output_format, group_name):
     """Get details for a single user group"""
+
     fmtr = _formatter(output_format, _output_handler(), 'group')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, False)
+    umapi_conn = ctx.obj['conn']
     query = umapi_client.GroupsQuery(umapi_conn)
-    group,  = [g for g in query if normalize(g['groupName']) == normalize(group_name)]
-    fmtr.record(group)
-    fmtr.write()
+    matched = [g for g in query if normalize(g['groupName']) == normalize(group_name)]
+    if len(matched) > 0:
+        fmtr.record(matched[0])
+        fmtr.write()
+    else:
+        click.echo(f"Group '{group_name}' not found")
 
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
               show_default=True)
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
-def group_read_all(console_name, output_format, out_file):
+@click.pass_context
+def group_read_all(ctx, output_format, out_file):
     """Get details for all groups in a console"""
     fmtr = _formatter(output_format, _output_handler(out_file), 'group')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, False)
+    umapi_conn = ctx.obj['conn']
     query = umapi_client.GroupsQuery(umapi_conn)
     for group in query:
         fmtr.record(group)
