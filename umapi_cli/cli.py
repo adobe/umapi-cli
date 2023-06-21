@@ -161,23 +161,24 @@ def user_create(ctx, user_type, email, username, domain, groups, firstname, last
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
               show_default=True)
 @click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
-@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
-              is_flag=True)
-def user_create_bulk(console_name, input_format, in_file, test_mode):
+@click.pass_context
+def user_create_bulk(ctx, input_format, in_file):
     """Create users in bulk from an input file"""
     fmtr = _formatter(input_format, _input_handler(in_file), 'user')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, test_mode)
-    queue = action_queue.ActionQueue(umapi_conn)
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
     for user in fmtr.read():
-        queue.queue_user_action(user_type=user['type'], email=user['email'], username=user['username'],
-                                domain=user['domain'], groups=user['groups'], firstname=user['firstname'],
-                                lastname=user['lastname'], country=user['country'])
+        if user['domain'] == '':
+            user['domain'] = None
+        queue.queue_user_create_action(id_type=user['type'],
+                                       email=user['email'], username=user['username'],
+                                       domain=user['domain'], groups=user['groups'],
+                                       firstname=user['firstname'],
+                                       lastname=user['lastname'],
+                                       country=user['country'])
     queue.execute()
     for err in queue.errors():
         click.echo("Error: {}".format(err))
