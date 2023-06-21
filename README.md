@@ -1,6 +1,7 @@
 # User Management API CLI Tool
 
-A simple command-line interface (CLI) client to the [Adobe User Management API](https://adobe-apiplatform.github.io/umapi-documentation/en/).
+A simple command-line interface (CLI) client to the
+[Adobe User Management API](https://adobe-apiplatform.github.io/umapi-documentation/en/).
 
 ## Feature Overview
 
@@ -15,122 +16,157 @@ A simple command-line interface (CLI) client to the [Adobe User Management API](
     * Create
     * Delete
 
-Each command can operate on a single user or on a group of users (e.g. read all users or
-create users in bulk from an input file).
+Each command can operate on a single user or on a group of users (e.g. read all
+users or create users in bulk from an input file).
 
 "Read All" output formats:
 
 * Human-readable
 * CSV
-* [JSON](http://jsonlines.org)
+* [JSONL](http://jsonlines.org)
 
 Bulk create/update/delete formats:
 
 * CSV
-* [JSON](http://jsonlines.org)
+* [JSONL](http://jsonlines.org)
 
 ## Running in Development (Recommended)
 
-1. Clone this repo - `git clone git@git.corp.adobe.com:dmeservices/umapi-cli.git`
+1. Clone this repo - `git clone https://github.com/adobe/umapi-cli.git
 2. `cd umapi-cli`
 3. Install [Poetry](https://poetry.eustace.io/)
-4. Install dependencies `poetry install` (this command creates a unique virtual environment)
+4. Install dependencies `poetry install` (this command creates a unique virtual
+   environment)
 5. Run the tool with `poetry run umapi`
 
 ## Running the Executable
 
-Standalone executables can be found on the Releases page. These builds do not require Python to run.
-Since they embed Python, they are inherently a bit slower to run than the package build.
+Standalone executables can be found on the Releases page. These builds do not
+require Python to run. Since they embed Python, they are inherently a bit slower
+to run than the package build.
 
 ## Usage Overview
 
-The tool operates on a series of commands.
+The tool operates on a series of commands. Each command performs a certain
+operation - read single user, read all users, create user/group, etc.
 
 ```
 $ umapi --help
 Usage: umapi [OPTIONS] COMMAND [ARGS]...
 
 Options:
+  --env PATH  Path to .env file (optional)
+  -t, --test  Run command in test mode
+  -v          Enable verbose logging
   -h, --help  Show this message and exit.
+  --version   Show the version and exit.
 
 Commands:
   group-read        Get details for a single user group
   group-read-all    Get details for all groups in a console
-  init              Initialize a new UMAPI client config
   user-create       Create a single user
   user-create-bulk  Create users in bulk from an input file
   user-delete       Delete a single user (from org and/or identity...
   user-delete-bulk  Delete users in bulk from input file (from org and/or...
   user-read         Get details for a single user
   user-read-all     Get details for all users belonging to a console
+  user-update       Update user information for a single user
+  user-update-bulk  Update users in bulk from input file
 ```
 
-Before running any user or group command, it is necessary to initialize the tool with a 
-UMAPI configuration. The command `init` will create a new UMAPI config in the **current 
-working directory** (under `.config/`).
+### General Options
 
-**NOTE:** We recommend establishing a working directory to use this tool (e.g. `~/umapi-cli`).
-This ensures that the `.config` directory does not conflict with any system-related config
-directories.
+The following options apply to any command. They should be specified before the
+command being invoked.
 
-UMAPI operation commands use the form `noun-verb[-modifier]` (e.g. `user-read` or `group-update-bulk`).
-
-All UMAPI operation commands implement `-c/--console-name` to target alternate Admin Console
-connections.
-
-### `init`
-
-Initialize a new UMAPI client configuration. Will prompt for required UMAPI integration details.
-
-See the [Adobe.IO documentation](https://www.adobe.io/authentication/auth-methods.html#!AdobeDocs/adobeio-auth/master/AuthenticationOverview/ServiceAccountIntegration.md)
-for creating a UMAPI integration and getting credentials.
-
-Once you have an integration for the User Management API, the credentials required by `init`
-can be found on the Integration Details page for the integration. The path to the private key file
-is also required.
-
-Running `umapi init` with no additional parameters with interactively prompt you for each
-piece of UMAPI configuration it needs and store this in a config file called "main".
-
-Additional UMAPI connections can be configured by setting the `-c` or `--console-name` option.
-The console name should be a short alphanumeric identifier (e.g. `-c stock_console`).
+For example, to invoke test mode when creating a list of users from a CSV file:
 
 ```
-$ umapi init
-Organization ID: [org id]
-Tech Account ID: [tech account ID (not email)]
-API Key: [api key]
-Client Secret: [client secret]
-Private Key Path [private.key]: /path/to/private.key
-Delete private key file? [y/N]: y
+$ umapi -t user-create-bulk -f csv -i users.csv
 ```
 
-These configuration items can also be set as options to avoid the interactive prompt.
+The following general options apply to any UMAPI command:
+
+* `--env` - Specify an `env` file containing UMAPI configuration. If this isn't
+  specified, then the tool will look for a `.env` file in the current working
+  directory. If that isn't present then it will look for the `UMAPI_*`
+  environment variables mentioned above, which define config options for the
+  UMAPI connection.
+* `-t/--test` - Invoke test mode for all UMAPI calls made when running the
+  command. Test mode performs all API actions in a "dry run" mode which will
+  return results as if the actions were executed, but not perform any actual
+  changes to users or groups in the Admin Console. This can also be used for
+  user and group read operations, but it does not affect the output of the read
+  operation.
+* `-v` - Enable logging and control verbosity. Pass `-v` to enable `info` level
+  logging. Pass `-vv` to log with more information at the `debug` level. If
+  neither option is passed, then the tool will only pass output for errors and
+  the results of read operations. **Note:** the tool logs output to stdout.
+  Redirect stdout to a file to capture log information.
+
+## Configuring
+
+The CLI tool requires a valid connection to the User Management API. This must
+be set up in the [Adobe Developer Console](https://developer.adobe.com/console)
+prior to using the tool.
+
+Refer to [this
+guide](https://developer.adobe.com/developer-console/docs/guides/authentication/ServerToServerAuthentication/implementation/)
+if you need help creating the API integration and credentials. Once setup is
+complete, you need three items from the credential page:
+
+* `client_id` - Unique identifier to authorize the API client
+* `client_secret` - Secret token to authenticate the connection
+* `org_id` - Unique organization identifier
+
+The UMAPI CLI Tool expects these items to be set in the following evironment variables.
+
+* `UMAPI_CLIENT_ID`
+* `UMAPI_CLIENT_SECRET`
+* `UMAPI_ORG_ID`
+
+These can either be set as system variables (e.g. `export
+UMAPI_CLIENT_ID=abc123`) or saved to a `.env` file in this format:
 
 ```
-$ umapi init --help
-Usage: umapi init [OPTIONS]
-
-  Initialize a new UMAPI client config
-
-Options:
-  -h, --help               Show this message and exit.
-  --org-id TEXT            Organization ID
-  --tech-acct TEXT         Tech Account ID
-  --api-key TEXT           API Key
-  --client-secret TEXT     Client Secret
-  --priv-key TEXT          Private Key Path
-  -d / -D                  Delete private key file (or do not delete it)
-  -c, --console-name TEXT  Short name to assign to the integration config
-                           [default: main]
-  -o                       Overwrite existing config
+UMAPI_CLIENT_ID=abc-123
+UMAPI_CLIENT_SECRET=xyz-9876
+UMAPI_ORG_ID=ABC123@AdobeOrg
 ```
+
+Save this to a file with the name `.env` and the UMAPI CLI Tool will read it if
+it is present in the current working directory.
+
+> ***NOTE:** You are responsible for keeping this file safe. Limit access to it
+> to prevent unauthorized access.
+
+For most users, it is sufficient to provide the Client ID, Client Secret and Org
+ID. There are, however, cases where the auth or UMAPI endpoints need to be
+customized. They can be set with these variables:
+
+* `UMAPI_AUTH_HOST` - Hostname of auth endpoint server
+* `UMAPI_AUTH_ENDPOINT` - Path portion of auth endpoint
+* `UMAPI_URL` - Full URI to UMAPI endpoint
+
+If you are working with more than one target, you can specify an alternative env
+file with the `--env` option.
+
+```
+$ umapi --env .env-secondary user-read-all
+```
+
+The above example reads UMAPI config from the file `.env-secondary` since this
+file isn't named `.env`, it won't be read automatically. To read it, we pass the
+`--env` option before we specify the command (`user-read-all` in this case).
+
+## Commands
 
 ### `user-read`
 
 Get details for a single user by email address. 
 
-Formats: JSON, CSV, or human-readable (default.)
+Change the output format with the option `-f/--format`. Supported formats: JSON,
+CSV, or human-readable (default.)
 
 ```
 $ umapi user-read -e user@example.com
@@ -154,8 +190,6 @@ Usage: umapi user-read [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -c, --console-name TEXT       Short name of the integration config
-                                [default: main]
   -f, --format csv|json|pretty  Output format  [default: pretty]
   -e, --email TEXT              User email address  [required]
 ```
@@ -164,9 +198,10 @@ Options:
 
 Get details for all users in a given console. 
 
-Formats: [JSON](http://jsonlines.org), CSV, or human-readable (default.)
+Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default).
 
-This command writes to stdout by default, but can optionally write output to a given filename.
+This command writes to stdout by default, but can optionally write output to a
+given filename.
 
 ```
 # write all users to a CSV file
@@ -183,15 +218,31 @@ Usage: umapi user-read-all [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -c, --console-name TEXT       Short name of the integration config
-                                [default: main]
   -f, --format csv|json|pretty  Output format  [default: pretty]
   -o, --out-file FILENAME       Write output to this filename
 ```
 
+Names of columns/fields when writing to CSV or JSONL are the same.
+
+| Column Name | Purpose                                                               |
+|-------------|-----------------------------------------------------------------------|
+| `type`      | User's identity type (`enterpriseID`, `federatedID` or `adobeID`)     |
+| `firstname` | User's given (first) name                                             |
+| `lastname`  | User's surname (last name)                                            |
+| `email`     | User's email address                                                  |
+| `username`  | SSO username of user                                                  |
+| `domain`    | If the user is in a claimed domain, this is the domain they belong to |
+| `country`   | Two-letter country code indicating country of user                    |
+| `groups`    | List* of groups to which user is assigned                             |
+
+\* in JSONL, groups are represented as a JSON list. In CSV, groups are
+serialised to a comma-delimited list (enclosed in double quotes).
+
 ### `user-create`
 
 Create a single user.
+
+Example:
 
 ```
 $ umapi user-create --type federatedID --email test.user.001@example.com \
@@ -205,12 +256,10 @@ Usage:
 $ umapi user-create --help
 Usage: umapi user-create [OPTIONS]
 
-  Create a single user
+  Create a single user.
 
 Options:
   -h, --help                      Show this message and exit.
-  -c, --console-name TEXT         Short name of the integration config
-                                  [default: main]
   --type adobeID|enterpriseID|federatedID
                                   User's identity type  [default: federatedID]
   --email TEXT                    User's email address  [required]
@@ -224,19 +273,19 @@ Options:
   --lastname TEXT                 User's last name
   --country TEXT                  User's two-letter (ISO-3166-1 alpha2)
                                   country code  [required]
-  -t, --test                      Run command in test mode
 ```
 
 ### `user-create-bulk`
 
 Create users in bulk from an input file.
 
-Formats: [JSON](http://jsonlines.org) or CSV (default)
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
 
 Expects `-i/--in-file` option that specifies input file path.
 
+Example - create all users specified in "users.csv"
+
 ```
-# create all users specified in "users.csv"
 $ umapi user-create-bulk -f csv -i users.csv
 ```
 
@@ -249,13 +298,27 @@ Usage: umapi user-create-bulk [OPTIONS]
   Create users in bulk from an input file
 
 Options:
-  -h, --help               Show this message and exit.
-  -c, --console-name TEXT  Short name of the integration config  [default:
-                           main]
-  -f, --format csv|json    Input file format  [default: csv]
-  -i, --in-file FILENAME   Input filename
-  -t, --test               Run command in test mode
+  -h, --help              Show this message and exit.
+  -f, --format csv|json   Input file format  [default: csv]
+  -i, --in-file FILENAME  Input filename
 ```
+
+The columns/fields expected by `user-create-bulk` are named and formatted in the
+same way as output from `user-read-all`.
+
+| Column Name | Purpose                                                               |
+|-------------|-----------------------------------------------------------------------|
+| `type`      | User's identity type (`enterpriseID`, `federatedID` or `adobeID`)     |
+| `firstname` | User's given (first) name                                             |
+| `lastname`  | User's surname (last name)                                            |
+| `email`     | User's email address                                                  |
+| `username`  | SSO username of user                                                  |
+| `domain`    | If the user is in a claimed domain, this is the domain they belong to |
+| `country`   | Two-letter country code indicating country of user                    |
+| `groups`    | List* of groups to which user is assigned                             |
+
+\* in JSONL, groups are represented as a JSON list. In CSV, groups are
+serialised to a comma-delimited list (enclosed in double quotes).
 
 ### `user-update`
 

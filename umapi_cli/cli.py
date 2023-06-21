@@ -148,8 +148,8 @@ def group_read_all(ctx, output_format, out_file):
 @click.option('--country', help="User's two-letter (ISO-3166-1 alpha2) country code", required=True)
 @click.pass_context
 def user_create(ctx, user_type, email, username, domain, groups, firstname, lastname, country):
-    """Create a single user
-
+    """Create a single user."""
+    """
        Example:
 
        umapi user-create \
