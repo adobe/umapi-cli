@@ -32,7 +32,7 @@ Bulk create/update/delete formats:
 
 ## Running in Development (Recommended)
 
-1. Clone this repo - `git clone https://github.com/adobe/umapi-cli.git
+1. Clone this repo - `git clone https://github.com/adobe/umapi-cli.git`
 2. `cd umapi-cli`
 3. Install [Poetry](https://poetry.eustace.io/)
 4. Install dependencies `poetry install` (this command creates a unique virtual
