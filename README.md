@@ -137,7 +137,7 @@ UMAPI_ORG_ID=ABC123@AdobeOrg
 Save this to a file with the name `.env` and the UMAPI CLI Tool will read it if
 it is present in the current working directory.
 
-> ***NOTE:** You are responsible for keeping this file safe. Limit access to it
+> **NOTE:** You are responsible for keeping this file safe. Limit access to it
 > to prevent unauthorized access.
 
 For most users, it is sufficient to provide the Client ID, Client Secret and Org
