@@ -47,6 +47,11 @@ class InputHandler:
             "domain": Or(None, str),
             "groups": Or(None, list, Use(_split_groups)),
         }),
+        'user_delete_bulk': Schema({
+            "email": And(str, len),
+            "hard_delete": And(str, Use(str.strip), Use(str.lower),
+                               lambda s: s in ('y', 'n'), error="hard_delete must be Y or N")
+        }),
     }
 
     def __init__(self, fmt):

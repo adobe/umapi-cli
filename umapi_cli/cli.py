@@ -213,22 +213,19 @@ def user_delete(ctx, email, hard_delete):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
               show_default=True)
 @click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
-@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
-              is_flag=True)
-def user_delete_bulk(console_name, input_format, in_file, test_mode):
+@click.pass_context
+def user_delete_bulk(ctx, input_format, in_file):
     """Delete users in bulk from input file (from org and/or identity directory)"""
-    fmtr = _formatter(input_format, _input_fh(in_file), 'user')
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, test_mode)
-    queue = action_queue.ActionQueue(umapi_conn)
+
+    fmtr = _formatter(input_format, _input_fh(in_file), InputHandler('user_delete_bulk'))
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
     for user in fmtr.read():
-        queue.queue_delete_action(user['type'], user['email'],
-                                  True if user['hard_delete'].strip().lower() == 'y' else False)
+        queue.queue_delete_action(user['email'],
+                                  True if user['hard_delete'] == 'y' else False)
     queue.execute()
     for err in queue.errors():
         click.echo("Error: {}".format(err))
