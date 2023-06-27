@@ -50,9 +50,8 @@ class ActionQueue:
             user.add_to_groups(groups)
         self.push(user)
 
-    def queue_delete_action(self, user_type, email, hard_delete=False):
-        assert user_type in self.USER_TYPES, "'{}' is an invalid user type".format(user_type)
-        user = umapi_client.UserAction(self.USER_TYPES[user_type], email)
+    def queue_delete_action(self, email, hard_delete=False):
+        user = umapi_client.UserAction(email)
         user.remove_from_organization(hard_delete)
         self.push(user)
 

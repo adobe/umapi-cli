@@ -196,22 +196,17 @@ def user_create_bulk(ctx, input_format, in_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-e', '--email', help='User email address', required=True)
-@click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
-              default='federatedID', show_default=True)
 @click.option('-d', '--hard', 'hard_delete',
               help="Delete user from underlying directory instead of just the org level",
               default=False, show_default=False, is_flag=True)
-@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
-              is_flag=True)
-def user_delete(console_name, email, user_type, hard_delete, test_mode):
+@click.pass_context
+def user_delete(ctx, email, hard_delete):
     """Delete a single user (from org and/or identity directory)"""
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, test_mode)
-    queue = action_queue.ActionQueue(umapi_conn)
-    queue.queue_delete_action(user_type, email, hard_delete)
+
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    queue.queue_delete_action(email, hard_delete)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 
