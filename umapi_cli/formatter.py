@@ -52,6 +52,13 @@ class InputHandler:
             "hard_delete": And(str, Use(str.strip), Use(str.lower),
                                lambda s: s in ('y', 'n'), error="hard_delete must be Y or N")
         }),
+        'user_update_bulk': Schema({
+            "email": And(str, len),
+            "email_new": Or(None, str),
+            "firstname": Or(None, str),
+            "lastname": Or(None, str),
+            "username": Or(None, str),
+        }),
     }
 
     def __init__(self, fmt):
