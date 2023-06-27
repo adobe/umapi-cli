@@ -58,6 +58,8 @@ class InputHandler:
             "firstname": Or(None, str),
             "lastname": Or(None, str),
             "username": Or(None, str),
+            "add_groups": Or(None, list, Use(_split_groups)),
+            "remove_groups": Or(None, list, Use(_split_groups)),
         }),
     }
 

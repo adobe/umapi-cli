@@ -58,10 +58,22 @@ class ActionQueue:
     def queue_update_action(self, email, **kwargs):
         user = UserAction(email)
         params = {}
+        groups_to_add = []
+        groups_to_remove = []
         for k,v in kwargs.items():
+            if k == 'add_groups':
+                groups_to_add = v
+                continue
+            if k == 'remove_groups':
+                groups_to_remove = v
+                continue
             if k == 'email_new':
                 params['email'] = v
-            else:
-                params[k] = v
+                continue
+            params[k] = v
         user.update(**params)
+        if groups_to_add:
+            user.add_to_groups(groups_to_add)
+        if groups_to_remove:
+            user.remove_from_groups(groups_to_remove)
         self.push(user)

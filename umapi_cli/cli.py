@@ -238,14 +238,21 @@ def user_delete_bulk(ctx, input_format, in_file):
 @click.option('-f', '--firstname', help="User's first name", required=False)
 @click.option('-l', '--lastname', help="User's last name", required=False)
 @click.option('-u', '--username', help="User's username", required=False)
+@click.option('-g', '--groups-add', help="Comma-delimited list of groups to add for user", required=False)
+@click.option('-G', '--groups-remove', help="Comma-delimited list of groups to remove from user", required=False)
 @click.pass_context
-def user_update(ctx, email, email_new, firstname, lastname, username):
+def user_update(ctx, email, email_new, firstname, lastname, username, groups_add, groups_remove):
     """Update user information for a single user"""
 
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
+    if groups_add is not None:
+        groups_add = groups_add.split(',')
+    if groups_remove is not None:
+        groups_remove = groups_remove.split(',')
     queue.queue_update_action(email, email_new=email_new, firstname=firstname,
-                              lastname=lastname, username=username)
+                              lastname=lastname, username=username, add_groups=groups_add,
+                              remove_groups=groups_remove)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 
@@ -263,9 +270,7 @@ def user_update_bulk(ctx, input_format, in_file):
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
     for user in fmtr.read():
-        queue.queue_update_action(user['email'], email_new=user['email_new'],
-                                  firstname=user['firstname'], lastname=user['lastname'],
-                                  username=user['username'])
+        queue.queue_update_action(**user)
     queue.execute()
     for err in queue.errors():
         click.echo("Error: {}".format(err))
