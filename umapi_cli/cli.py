@@ -233,24 +233,17 @@ def user_delete_bulk(ctx, input_format, in_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-c', '--console-name', help='Short name of the integration config',
-              default='main', show_default=True)
 @click.option('-e', '--email', help='User email address', required=True)
 @click.option('-E', '--email-new', help="User's new email address", required=False)
 @click.option('-f', '--firstname', help="User's first name", required=False)
 @click.option('-l', '--lastname', help="User's last name", required=False)
 @click.option('-u', '--username', help="User's username", required=False)
-@click.option('-C', '--country', help="User's country code", required=False)
-@click.option('--type', 'user_type', help="User's identity type", metavar='adobeID|enterpriseID|federatedID',
-              default='federatedID', show_default=True)
-@click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
-              is_flag=True)
-def user_update(console_name, email, email_new, firstname, lastname, username, country, user_type, test_mode):
+@click.pass_context
+def user_update(ctx, email, email_new, firstname, lastname, username):
     """Update user information for a single user"""
-    auth_config = config.read(console_name)
-    umapi_conn = client.create_conn(auth_config, test_mode)
-    queue = action_queue.ActionQueue(umapi_conn)
-    queue.queue_update_action(user_type, email, email_new, firstname, lastname, username, country)
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    queue.queue_update_action(email, email_new, firstname, lastname, username)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 
