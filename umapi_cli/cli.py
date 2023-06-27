@@ -243,7 +243,8 @@ def user_update(ctx, email, email_new, firstname, lastname, username):
     """Update user information for a single user"""
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
-    queue.queue_update_action(email, email_new, firstname, lastname, username)
+    queue.queue_update_action(email, email_new=email_new, firstname=firstname,
+                              lastname=lastname, username=username)
     queue.execute()
     click.echo("errors: {}".format(queue.errors()))
 

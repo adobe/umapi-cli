@@ -55,11 +55,13 @@ class ActionQueue:
         user.remove_from_organization(hard_delete)
         self.push(user)
 
-    def queue_update_action(self, email, email_new, firstname, lastname, username):
-        if not email_new:
-            email_new = email
-        if email_new == username:
-            username = None
+    def queue_update_action(self, email, **kwargs):
         user = UserAction(email)
-        user.update(email_new, username, firstname, lastname)
+        params = {}
+        for k,v in kwargs.items():
+            if k == 'email_new':
+                params['email'] = v
+            else:
+                params[k] = v
+        user.update(**params)
         self.push(user)
