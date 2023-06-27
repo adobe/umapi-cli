@@ -17,25 +17,25 @@ from . import config
 from . import client
 from . import formatter
 from .action_queue import ActionQueue
-from .formatter import normalize
+from .formatter import normalize, InputHandler, OutputHandler
 from . import log
 from .version import __version__ as app_version
 
-def _formatter(output_format, handler, record_type):
-    fmtr_class = getattr(formatter, output_format, None)
+def _formatter(data_format, fh, handler):
+    fmtr_class = getattr(formatter, data_format, None)
     if fmtr_class is None:
-        click.echo("Unknown format '{}'".format(output_format))
+        click.echo("Unknown format '{}'".format(data_format))
         sys.exit(1)
-    return fmtr_class(handler, record_type)
+    return fmtr_class(fh, handler)
 
 
-def _output_handler(out_file=None):
+def _output_fh(out_file=None):
     if out_file is not None:
         return open(out_file, 'w', encoding='utf-8')
     return sys.stdout
 
 
-def _input_handler(in_file):
+def _input_fh(in_file):
     return open(in_file, 'r')
 
 
@@ -66,7 +66,7 @@ def app(ctx, env_file, test_mode, v):
 @click.pass_context
 def user_read(ctx, output_format, email):
     """Get details for a single user"""
-    fmtr = _formatter(output_format, _output_handler(), 'user')
+    fmtr = _formatter(output_format, _output_fh(), OutputHandler('user_read'))
     umapi_conn = ctx.obj['conn']
     user = umapi_client.UserQuery(umapi_conn, email).result()
     if not user:
@@ -85,7 +85,7 @@ def user_read(ctx, output_format, email):
 def user_read_all(ctx, output_format, out_file):
     """Get details for all users belonging to a console"""
 
-    fmtr = _formatter(output_format, _output_handler(out_file), 'user')
+    fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read'))
     umapi_conn = ctx.obj['conn']
     query = umapi_client.UsersQuery(umapi_conn)
     report_total = True
@@ -107,7 +107,7 @@ def user_read_all(ctx, output_format, out_file):
 def group_read(ctx, output_format, group_name):
     """Get details for a single user group"""
 
-    fmtr = _formatter(output_format, _output_handler(), 'group')
+    fmtr = _formatter(output_format, _output_fh(), OutputHandler('group_read'))
     umapi_conn = ctx.obj['conn']
     query = umapi_client.GroupsQuery(umapi_conn)
     matched = [g for g in query if normalize(g['groupName']) == normalize(group_name)]
@@ -126,7 +126,7 @@ def group_read(ctx, output_format, group_name):
 @click.pass_context
 def group_read_all(ctx, output_format, out_file):
     """Get details for all groups in a console"""
-    fmtr = _formatter(output_format, _output_handler(out_file), 'group')
+    fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('group_read'))
     umapi_conn = ctx.obj['conn']
     query = umapi_client.GroupsQuery(umapi_conn)
     for group in query:
@@ -177,7 +177,7 @@ def user_create(ctx, user_type, email, username, domain, groups, firstname, last
 @click.pass_context
 def user_create_bulk(ctx, input_format, in_file):
     """Create users in bulk from an input file"""
-    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
+    fmtr = _formatter(input_format, _input_fh(in_file), InputHandler('user_create_bulk'))
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
     for user in fmtr.read():
@@ -227,7 +227,7 @@ def user_delete(console_name, email, user_type, hard_delete, test_mode):
               is_flag=True)
 def user_delete_bulk(console_name, input_format, in_file, test_mode):
     """Delete users in bulk from input file (from org and/or identity directory)"""
-    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
+    fmtr = _formatter(input_format, _input_fh(in_file), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)
@@ -274,7 +274,7 @@ def user_update(console_name, email, email_new, firstname, lastname, username, c
               is_flag=True)
 def user_update_bulk(console_name, input_format, in_file, test_mode):
     """Update users in bulk from input file"""
-    fmtr = _formatter(input_format, _input_handler(in_file), 'user')
+    fmtr = _formatter(input_format, _input_fh(in_file), 'user')
     auth_config = config.read(console_name)
     umapi_conn = client.create_conn(auth_config, test_mode)
     queue = action_queue.ActionQueue(umapi_conn)

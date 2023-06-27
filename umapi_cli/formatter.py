@@ -10,53 +10,93 @@
 
 import json as _json
 import csv as _csv
+from schema import Schema, And, Use, Or
 
 
-def pretty(handler, record_type):
-    return PrettyFormatter(handler, record_type)
+def pretty(fh, record_type):
+    return PrettyFormatter(fh, record_type)
 
 
-def json(handler, record_type):
-    return JSONFormatter(handler, record_type)
+def json(fh, record_type):
+    return JSONFormatter(fh, record_type)
 
 
-def csv(handler, record_type):
-    return CSVFormatter(handler, record_type)
+def csv(fh, record_type):
+    return CSVFormatter(fh, record_type)
 
 
-class Formatter:
-    output_format = {
-        'user': [
-            "country",
-            "domain",
+def _split_groups(v):
+    return v.split(',') if len(v) else []
+
+
+def _join_groups(v):
+    return ','.join(v)
+
+
+class InputHandler:
+    """Validate and transform input"""
+
+    formats = {
+        'user_create_bulk': Schema({
+            "type": And(str, lambda s: s in ('adobeID', 'federatedID', 'enterpriseID')),
+            "email": And(str, len),
+            "firstname": Or(None, str),
+            "lastname": Or(None, str),
+            "country": Or(None, And(str, lambda s: len(s) == 2)),
+            "username": Or(None, str),
+            "domain": Or(None, str),
+            "groups": Or(None, list, Use(_split_groups)),
+        }),
+    }
+
+    def __init__(self, fmt):
+        assert fmt in self.formats, "Invalid format"
+        self.format = fmt
+
+    def handle(self, rec):
+        return self.formats[self.format].validate(rec)
+
+
+class OutputHandler:
+    """Transform output and prepare for formatting"""
+
+    formats = {
+        'user_read': [
+            "type",
             "email",
-            "username",
             "firstname",
             "lastname",
+            "country",
+            "username",
+            "domain",
             "groups",
-            "type",
         ],
-        'group': [
+        'group_read': [
             'groupName',
             'type',
             'adminGroupName',
             'memberCount',
             'productName',
             'licenseQuota',
-        ]
+        ],
     }
 
-    def __init__(self, handler, record_type):
-        assert record_type in ['user', 'group'], "Invalid record_type"
-        self.record_type = record_type
+    def __init__(self, fmt):
+        assert fmt in self.formats, "Invalid format"
+        self.format = fmt
+
+    def handle(self, record):
+        return {k: v for k, v in record.items() if k in self.formats[self.format]}
+
+
+class Formatter:
+    def __init__(self, fh, handler):
         self.records = []
+        self.fh = fh
         self.handler = handler
 
     def record(self, record):
         self.records.append(record)
-
-    def format_output(self, record):
-        return {k: v for k, v in record.items() if k in self.output_format[self.record_type]}
 
     def write(self):
         pass
@@ -67,13 +107,13 @@ class Formatter:
 
 class PrettyFormatter(Formatter):
     def write(self):
-        for record in (self.format_output(r) for r in self.records):
+        for record in (self.handler.handle(r) for r in self.records):
             formatted = []
             padding = max(map(len, record.keys())) + 1
             for k, v in record.items():
                 formatted.append("{0:{1}}: {2}".format(k, padding, v))
             formatted.append('\n')
-            self.handler.write('\n'.join(formatted))
+            self.fh.write('\n'.join(formatted))
 
     def read(self):
         raise NotImplementedError
@@ -81,35 +121,33 @@ class PrettyFormatter(Formatter):
 
 class JSONFormatter(Formatter):
     def write(self):
-        for record in (self.format_output(r) for r in self.records):
-            _json.dump(record, self.handler)
-            self.handler.write('\n')
+        for record in (self.handler.handle(r) for r in self.records):
+            _json.dump(record, self.fh)
+            self.fh.write('\n')
 
     def read(self):
-        for raw_record in self.handler:
-            self.record(_json.loads(raw_record))
+        for raw_record in self.fh:
+            self.record(self.handler.handle(_json.loads(raw_record)))
         return self.records
 
 
 class CSVFormatter(Formatter):
-    split_fields = ['groups']
-
     def write(self):
         if not self.records:
             return
-        writer = _csv.DictWriter(self.handler, self.fieldnames(self.records), lineterminator='\n')
+        writer = _csv.DictWriter(self.fh, self.fieldnames(self.records), lineterminator='\n')
         writer.writeheader()
         writer.writerows(map(self.format_rec, self.records))
 
     def read(self):
-        reader = _csv.DictReader(self.handler)
+        reader = _csv.DictReader(self.fh)
         for record in reader:
-            self.record({k: self.parse_field(k, v) for k, v in record.items()})
+            self.record(self.handler.handle(record))
         return self.records
 
     def fieldnames(self, records):
         fieldnames = set()
-        for rec in (self.format_output(r) for r in records):
+        for rec in (self.handler.handle(r) for r in records):
             fieldnames.update(set(rec.keys()))
         return sorted(list(fieldnames))
 
@@ -121,11 +159,7 @@ class CSVFormatter(Formatter):
                 formatted[k] = ','.join(v)
             else:
                 formatted[k] = v
-        return self.format_output(formatted)
-
-    @classmethod
-    def parse_field(cls, field_name, field_val):
-        return field_val.split(',') if field_name in cls.split_fields else field_val
+        return self.handler.handle(formatted)
 
 
 def normalize(string):

@@ -244,6 +244,18 @@ files = [
 ]
 
 [[package]]
+name = "contextlib2"
+version = "21.6.0"
+description = "Backports and enhancements for the contextlib module"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "contextlib2-21.6.0-py2.py3-none-any.whl", hash = "sha256:3fbdb64466afd23abaf6c977627b75b6139a5a3e8ce38405c5b413aed7a0471f"},
+    {file = "contextlib2-21.6.0.tar.gz", hash = "sha256:ab1e2bfe1d01d968e1b7e8d9023bc51ef3509bba217bb730cee3827e1ee82869"},
+]
+
+[[package]]
 name = "cryptography"
 version = "38.0.4"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -513,6 +525,21 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "schema"
+version = "0.7.5"
+description = "Simple data validation library"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "schema-0.7.5-py2.py3-none-any.whl", hash = "sha256:f3ffdeeada09ec34bf40d7d79996d9f7175db93b7a5065de0faa7f41083c1e6c"},
+    {file = "schema-0.7.5.tar.gz", hash = "sha256:f06717112c61895cabc4707752b88716e8420a8819d71404501e114f91043197"},
+]
+
+[package.dependencies]
+contextlib2 = ">=0.5.5"
+
+[[package]]
 name = "setuptools"
 version = "68.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -579,4 +606,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "75e68c6358cc2a266ebe4fb93a41ae71bab0b06fb6378b781d1d9bf8485a947f"
+content-hash = "b7e710217c9a7058cf3c9af0057f9f0e51cbc5a9454c2a97ce8a204618aa90a0"

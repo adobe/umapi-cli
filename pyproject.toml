@@ -15,6 +15,7 @@ pytest = "^6.0"
 pyinstaller = "^3.5"
 pywin32-ctypes = "^0.2.0"
 pefile = "^2019.4"
+schema = "^0.7.5"
 
 [tool.poetry.scripts]
 umapi = 'umapi_cli.cli:app'
