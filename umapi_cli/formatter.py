@@ -65,6 +65,15 @@ class InputHandler:
             "name": And(str, len),
             "description": Or(None, str),
         }),
+        'group_update_bulk': Schema({
+            "name": And(str, len),
+            "name_new": Or(None, str),
+            "description": Or(None, str),
+            "add_users": Or(None, list, Use(_split_groups)),
+            "remove_users": Or(None, list, Use(_split_groups)),
+            "add_profiles": Or(None, list, Use(_split_groups)),
+            "remove_profiles": Or(None, list, Use(_split_groups)),
+        }),
     }
 
     def __init__(self, fmt):

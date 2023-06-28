@@ -325,5 +325,54 @@ def group_create_bulk(ctx, input_format, in_file):
         click.echo("Error: {}".format(err))
 
 
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-n', '--name', help='Current name of group', required=True)
+@click.option('-N', '--name-new', help="New name to assign group", required=False)
+@click.option('-d', '--description', help="Updated group description", required=False)
+@click.option('-u', '--users-add', help="Comma-delimited list of email addresses of users to assign", required=False)
+@click.option('-U', '--users-remove', help="Comma-delimited list of email addresses of users to remove", required=False)
+@click.option('-p', '--profiles-add', help="Comma-delimited list of product profiles to associate with group", required=False)
+@click.option('-P', '--profiles-remove', help="Comma-delimited list of product profiles to remove from group", required=False)
+@click.pass_context
+def group_update(ctx, name, name_new, description, users_add, users_remove, profiles_add, profiles_remove):
+    """Update information/memberships for a single group"""
+
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    if users_add is not None:
+        users_add = users_add.split(',')
+    if users_remove is not None:
+        users_remove = users_remove.split(',')
+    if profiles_add is not None:
+        profiles_add = profiles_add.split(',')
+    if profiles_remove is not None:
+        profiles_remove = profiles_remove.split(',')
+    queue.queue_group_update_action(name, name_new=name_new,
+                                    description=description, add_users=users_add, remove_users=users_remove,
+                                    add_profiles=profiles_add, remove_profiles=profiles_remove)
+    queue.execute()
+    click.echo("errors: {}".format(queue.errors()))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
+              show_default=True)
+@click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
+@click.pass_context
+def group_update_bulk(ctx, input_format, in_file):
+    """Update groups in bulk from input file"""
+
+    fmtr = _formatter(input_format, _input_fh(in_file), InputHandler('group_update_bulk'))
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    for group in fmtr.read():
+        queue.queue_group_update_action(**group)
+    queue.execute()
+    for err in queue.errors():
+        click.echo("Error: {}".format(err))
+
+
 if __name__ == '__main__':
     app()

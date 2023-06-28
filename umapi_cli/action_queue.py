@@ -55,6 +55,21 @@ class ActionQueue:
         group.create(description=description)
         self.push(group)
 
+    def queue_group_update_action(self, name, name_new, description, add_users,
+                                  remove_users, add_profiles, remove_profiles):
+        group = GroupAction(name)
+        if name_new is not None or description is not None:
+            group.update(name=name_new, description=description)
+        if add_users is not None:
+            group.add_users(add_users)
+        if remove_users is not None:
+            group.remove_users(remove_users)
+        if add_profiles:
+            group.add_to_products(add_profiles)
+        if remove_profiles is not None:
+            group.remove_from_products(remove_profiles)
+        self.push(group)
+
     def queue_delete_action(self, email, hard_delete=False):
         user = UserAction(email)
         user.remove_from_organization(hard_delete)
