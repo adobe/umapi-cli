@@ -479,6 +479,8 @@ user, and whether or not to hard-delete.
 
 Get details for a single group based on a given group name.
 
+Example:
+
 ```
 $ umapi group-read -g 'Adobe Sign'
 groupName      : Adobe Sign
@@ -488,6 +490,8 @@ memberCount    : 3
 productName    : Adobe Sign-Enterprise
 licenseQuota   : 10
 ```
+
+The group name is case-insensitive.
 
 Usage:
 
@@ -499,8 +503,6 @@ Usage: umapi group-read [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -c, --console-name TEXT       Short name of the integration config
-                                [default: main]
   -f, --format csv|json|pretty  Output format  [default: pretty]
   -g, --group TEXT              Group name  [required]
 ```
@@ -509,13 +511,15 @@ Options:
 
 Get details for all groups in a given console.
 
-Formats: [JSON](http://jsonlines.org), CSV, or human-readable (default.)
+Formats: [JSONL](http://jsonlines.org), CSV, or human-readable (default.)
 
 This command writes to stdout by default, but can optionally write output to a given filename.
 
+Example:
+
 ```
 # write all groups to a CSV file
-$ umapi user-group-all -f csv -o groups.csv
+$ umapi group-read-all -f csv -o groups.csv
 ```
 
 Usage:
@@ -528,8 +532,17 @@ Usage: umapi group-read-all [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -c, --console-name TEXT       Short name of the integration config
-                                [default: main]
   -f, --format csv|json|pretty  Output format  [default: pretty]
   -o, --out-file FILENAME       Write output to this filename
 ```
+
+`group-read-all` outputs the same fields regardless of the format in use.
+
+| Column Name      | Purpose                                                                  |
+|------------------|--------------------------------------------------------------------------|
+| `groupName`      | Name of group                                                            |
+| `type`           | Group type - `PRODUCT_PROFILE`, `USER_GROUP`, etc                        |
+| `adminGroupName` | Name of the admin group associated with this group                       |
+| `memberCount`    | Number of users who belong to this group                                 |
+| `productName`    | If this is a product profile, this is the name of the associated product |
+| `licenseQuota`   | License quota setting if group is a product profile                      |
