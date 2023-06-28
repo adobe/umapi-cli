@@ -13,13 +13,13 @@ import sys
 from umapi_client import UserQuery, UsersQuery, GroupsQuery
 import dotenv
 from pathlib import Path
-from . import config
-from . import client
-from . import formatter
-from .action_queue import ActionQueue
-from .formatter import normalize, InputHandler, OutputHandler
-from . import log
-from .version import __version__ as app_version
+from umapi_cli import config
+from umapi_cli import client
+from umapi_cli import formatter
+from umapi_cli.action_queue import ActionQueue
+from umapi_cli.formatter import normalize, InputHandler, OutputHandler
+from umapi_cli import log
+from umapi_cli.version import __version__ as app_version
 
 def _formatter(data_format, fh, handler):
     fmtr_class = getattr(formatter, data_format, None)

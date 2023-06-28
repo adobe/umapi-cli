@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['umapi_cli\\cli.py'],
+a = Analysis(['umapi_cli/cli.py'],
              binaries=[],
              datas=[],
              hiddenimports=[],
