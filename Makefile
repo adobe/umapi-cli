@@ -12,7 +12,7 @@ else
 	TARGET = dist/umapi
 endif
 
-$(TARGET): pyproject.toml poetry.lock umapi_cli/*.py
+$(TARGET): pyproject.toml poetry.lock umapi.spec umapi_cli/*.py
 	-$(RM) $(output_dir)
 	poetry install
 	poetry run pyinstaller --clean --noconfirm umapi.spec
