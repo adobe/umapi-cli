@@ -10,7 +10,7 @@
 
 import click
 import sys
-from umapi_client import UserQuery, UsersQuery, GroupQuery, GroupsQuery
+from umapi_client import UserQuery, UsersQuery, GroupsQuery
 import dotenv
 from pathlib import Path
 from . import config
