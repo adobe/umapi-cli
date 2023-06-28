@@ -10,7 +10,7 @@
 
 import re
 import umapi_client
-from umapi_client import UserAction
+from umapi_client import UserAction, GroupAction
 from .formatter import normalize
 from . import log
 
@@ -49,6 +49,11 @@ class ActionQueue:
         if groups is not None:
             user.add_to_groups(groups)
         self.push(user)
+
+    def queue_group_create_action(self, name, description):
+        group = GroupAction(name)
+        group.create(description=description)
+        self.push(group)
 
     def queue_delete_action(self, email, hard_delete=False):
         user = UserAction(email)

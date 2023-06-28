@@ -61,6 +61,10 @@ class InputHandler:
             "add_groups": Or(None, list, Use(_split_groups)),
             "remove_groups": Or(None, list, Use(_split_groups)),
         }),
+        'group_create_bulk': Schema({
+            "name": And(str, len),
+            "description": Or(None, str),
+        }),
     }
 
     def __init__(self, fmt):
