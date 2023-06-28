@@ -375,7 +375,7 @@ $ umapi user-update-bulk -f csv -i users.csv
 Usage:
 
 ```
-$ umapi user-create-bulk --help
+$ umapi user-update-bulk --help
 Usage: umapi user-update-bulk [OPTIONS]
 
   Update users in bulk from input file
@@ -546,3 +546,86 @@ Options:
 | `memberCount`    | Number of users who belong to this group                                 |
 | `productName`    | If this is a product profile, this is the name of the associated product |
 | `licenseQuota`   | License quota setting if group is a product profile                      |
+
+### `group-update`
+
+Update a single user group. This command also allows the management of users and
+profiles for a given group.
+
+Example:
+
+```
+$ umapi group-update
+  --name "Test Group" \
+  --name-new "Updated Test Group" \
+  --users-add "test.user.01@example.com,test.user.02@example.com"
+```
+
+Usage:
+
+```
+$ umapi group-update --help
+Usage: umapi group-update [OPTIONS]
+
+  Update information/memberships for a single group
+
+Options:
+  -h, --help                  Show this message and exit.
+  -n, --name TEXT             Current name of group  [required]
+  -N, --name-new TEXT         New name to assign group
+  -d, --description TEXT      Updated group description
+  -u, --users-add TEXT        Comma-delimited list of email addresses of users
+                              to assign
+  -U, --users-remove TEXT     Comma-delimited list of email addresses of users
+                              to remove
+  -p, --profiles-add TEXT     Comma-delimited list of product profiles to
+                              associate with group
+  -P, --profiles-remove TEXT  Comma-delimited list of product profiles to
+                              remove from group
+```
+
+The group name, `-n/--name` is required to identify the group. All other options
+are optional.
+
+### `group-update-bulk`
+
+Update groups in bulk from an input file.
+
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
+
+Expects `-i/--in-file` option that specifies input file path.
+
+Example - create all users specified in "groups.csv"
+
+```
+$ umapi group-update-bulk -f csv -i groups.csv
+```
+
+Usage:
+
+```
+$ umapi group-update-bulk --help
+Usage: umapi group-update-bulk [OPTIONS]
+
+  Update groups in bulk from input file
+
+Options:
+  -h, --help              Show this message and exit.
+  -f, --format csv|json   Input file format  [default: csv]
+  -i, --in-file FILENAME  Input filename
+```
+
+This is the expected format of an input file for bulk updating groups:
+
+| Column Name       | Purpose                                               |
+|-------------------|-------------------------------------------------------|
+| `name`            | Current name of group                                 |
+| `name_new`        | Updated group name                                    |
+| `description`     | Updated group description                             |
+| `add_users`       | List* of users to assign to group                     |
+| `remove_users`    | List* of users to remove from membeship of this group |
+| `add_profiles`    | List* of product profiles to assign to user group     |
+| `remove_profiles` | List* of product profiles to remove from group        |
+
+\* in JSONL, users/profiles are represented as a JSON list. In CSV, they are
+serialised to a comma-delimited list (enclosed in double quotes).
