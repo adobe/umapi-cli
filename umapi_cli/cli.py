@@ -10,7 +10,7 @@
 
 import click
 import sys
-import umapi_client
+from umapi_client import UserQuery, UsersQuery, GroupQuery, GroupsQuery
 import dotenv
 from pathlib import Path
 from . import config
@@ -66,9 +66,10 @@ def app(ctx, env_file, test_mode, v):
 @click.pass_context
 def user_read(ctx, output_format, email):
     """Get details for a single user"""
+
     fmtr = _formatter(output_format, _output_fh(), OutputHandler('user_read'))
     umapi_conn = ctx.obj['conn']
-    user = umapi_client.UserQuery(umapi_conn, email).result()
+    user = UserQuery(umapi_conn, email).result()
     if not user:
         click.echo('No user found')
         sys.exit(1)
@@ -87,7 +88,7 @@ def user_read_all(ctx, output_format, out_file):
 
     fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read'))
     umapi_conn = ctx.obj['conn']
-    query = umapi_client.UsersQuery(umapi_conn)
+    query = UsersQuery(umapi_conn)
     report_total = True
     for user in query:
         total, *_ = query.stats()
@@ -109,7 +110,7 @@ def group_read(ctx, output_format, group_name):
 
     fmtr = _formatter(output_format, _output_fh(), OutputHandler('group_read'))
     umapi_conn = ctx.obj['conn']
-    query = umapi_client.GroupsQuery(umapi_conn)
+    query = GroupsQuery(umapi_conn)
     matched = [g for g in query if normalize(g['groupName']) == normalize(group_name)]
     if len(matched) > 0:
         fmtr.record(matched[0])
@@ -126,9 +127,10 @@ def group_read(ctx, output_format, group_name):
 @click.pass_context
 def group_read_all(ctx, output_format, out_file):
     """Get details for all groups in a console"""
+
     fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('group_read'))
     umapi_conn = ctx.obj['conn']
-    query = umapi_client.GroupsQuery(umapi_conn)
+    query = GroupsQuery(umapi_conn)
     for group in query:
         fmtr.record(group)
     fmtr.write()
@@ -161,6 +163,7 @@ def user_create(ctx, user_type, email, username, domain, groups, firstname, last
              --lastname "User 001" \
              --country US
     """
+
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
     if groups is None:
@@ -181,6 +184,7 @@ def user_create(ctx, user_type, email, username, domain, groups, firstname, last
 @click.pass_context
 def user_create_bulk(ctx, input_format, in_file):
     """Create users in bulk from an input file"""
+
     fmtr = _formatter(input_format, _input_fh(in_file), InputHandler('user_create_bulk'))
     umapi_conn = ctx.obj['conn']
     queue = ActionQueue(umapi_conn)
