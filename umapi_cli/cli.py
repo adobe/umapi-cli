@@ -237,11 +237,11 @@ def user_delete_bulk(ctx, input_format, in_file):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-e', '--email', help='User email address', required=True)
-@click.option('-E', '--email-new', help="User's new email address", required=False)
-@click.option('-f', '--firstname', help="User's first name", required=False)
-@click.option('-l', '--lastname', help="User's last name", required=False)
-@click.option('-u', '--username', help="User's username", required=False)
+@click.option('-e', '--email', help='Email address that identifies the user', required=True)
+@click.option('-E', '--email-new', help="Updated email address", required=False)
+@click.option('-f', '--firstname', help="Updated given (first) name", required=False)
+@click.option('-l', '--lastname', help="Updated surname (last name)", required=False)
+@click.option('-u', '--username', help="Updated username", required=False)
 @click.option('-g', '--groups-add', help="Comma-delimited list of groups to add for user", required=False)
 @click.option('-G', '--groups-remove', help="Comma-delimited list of groups to remove from user", required=False)
 @click.pass_context

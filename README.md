@@ -324,8 +324,12 @@ serialised to a comma-delimited list (enclosed in double quotes).
 
 Update a single user.
 
+Example:
+
 ```
-$ umapi user-update --email test.user.001@example.com --firstname Test \
+$ umapi user-update
+  --email test.user.001@example.com \
+  --firstname Test \
   --lastname "Username 001"
 ```
 
@@ -338,20 +342,64 @@ Usage: umapi user-update [OPTIONS]
   Update user information for a single user
 
 Options:
-  -h, --help                      Show this message and exit.
-  -c, --console-name TEXT         Short name of the integration config
-                                  [default: main]
-
-  -e, --email TEXT                User email address  [required]
-  -E, --email-new TEXT            User's new email address
-  -f, --firstname TEXT            User's first name
-  -l, --lastname TEXT             User's last name
-  -u, --username TEXT             User's username
-  -C, --country TEXT              User's country code
-  --type adobeID|enterpriseID|federatedID
-                                  User's identity type  [default: federatedID]
-  -t, --test                      Run command in test mode
+  -h, --help                Show this message and exit.
+  -e, --email TEXT          Email address that identifies the user  [required]
+  -E, --email-new TEXT      Updated email address
+  -f, --firstname TEXT      Updated given (first) name
+  -l, --lastname TEXT       Updated surname (last name)
+  -u, --username TEXT       Updated username
+  -g, --groups-add TEXT     Comma-delimited list of groups to add for user
+  -G, --groups-remove TEXT  Comma-delimited list of groups to remove from user
 ```
+
+When updating a user, the email address is required to identify the user. The
+`-e/--email` option specifies the identifying email address. `-u/--username` is
+used to specify a new username when updating the username field.
+
+Apart from `-e/--email`, all other options are not required.
+
+### `user-update-bulk`
+
+Update users in bulk from an input file.
+
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
+
+Expects `-i/--in-file` option that specifies input file path.
+
+Example - create all users specified in "users.csv"
+
+```
+$ umapi user-update-bulk -f csv -i users.csv
+```
+
+Usage:
+
+```
+$ umapi user-create-bulk --help
+Usage: umapi user-update-bulk [OPTIONS]
+
+  Update users in bulk from input file
+
+Options:
+  -h, --help              Show this message and exit.
+  -f, --format csv|json   Input file format  [default: csv]
+  -i, --in-file FILENAME  Input filename
+```
+
+This is the expected format of an input file for bulk updating users:
+
+| Column Name     | Purpose                                        |
+|-----------------|------------------------------------------------|
+| `email`         | User's email address                           |
+| `email_new`     | New email address to assign user               |
+| `username`      | New username to assign                         |
+| `firstname`     | Updated given (first) name                     |
+| `lastname`      | Updated surname (last name)                    |
+| `add_groups`    | List* of group assignments to add for user     |
+| `remove_groups` | List* of group assignments to remove from user |
+
+\* in JSONL, groups are represented as a JSON list. In CSV, groups are
+serialised to a comma-delimited list (enclosed in double quotes).
 
 ### `user-delete`
 
@@ -363,12 +411,16 @@ There are two kinds of deletion:
 * **hard** - remove the user from the underlying identity directory (the "Directory Users" list)
 
 **NOTE:** Hard-deleting may only be done on the Console that owns the directory. Trusted 
-directories only support soft-deletion. Hard-deleting a user will delete **all** cloud
-assets associated with the user.
+directories only support soft-deletion.
+
+Example:
 
 ```
 # soft-delete user test.user.001@example.com
 $ umapi user-delete --email test.user.001@example.com
+
+# hard-delete user test.user.002@example.com
+$ umapi user-delete --email test.user.001@example.com --hard
 ```
 
 Usage:
@@ -380,32 +432,25 @@ Usage: umapi user-delete [OPTIONS]
   Delete a single user (from org and/or identity directory)
 
 Options:
-  -h, --help                      Show this message and exit.
-  -c, --console-name TEXT         Short name of the integration config
-                                  [default: main]
-  -e, --email TEXT                User email address  [required]
-  --type adobeID|enterpriseID|federatedID
-                                  User's identity type  [default: federatedID]
-  -d, --hard                      Delete user from underlying directory
-                                  instead of just the org level
-  -t, --test                      Run command in test mode
+  -h, --help        Show this message and exit.
+  -e, --email TEXT  User email address  [required]
+  -d, --hard        Delete user from underlying directory instead of just the
+                    org level
 ```
 
 ### `user-delete-bulk`
 
 Delete a list of users from an input file.
 
-Formats: [JSON](http://jsonlines.org) or CSV (default)
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
 
 See [notes above](#user-delete) about deletion types.
 
 Expects `-i/--in-file` option that specifies input file path.
 
-See [format spec](#user-delete-bulk-1) below for column/field spec.
-
 ```
 # delete all users specified in "delete_users.csv"
-$ user-delete-bulk -i delete_users.csv
+$ umapi user-delete-bulk -i delete_users.csv -f csv
 ```
 
 Usage:
@@ -417,13 +462,18 @@ Usage: umapi user-delete-bulk [OPTIONS]
   Delete users in bulk from input file (from org and/or identity directory)
 
 Options:
-  -h, --help               Show this message and exit.
-  -c, --console-name TEXT  Short name of the integration config  [default:
-                           main]
-  -f, --format csv|json    Input file format  [default: csv]
-  -i, --in-file FILENAME   Input filename
-  -t, --test               Run command in test mode
+  -h, --help              Show this message and exit.
+  -f, --format csv|json   Input file format  [default: csv]
+  -i, --in-file FILENAME  Input filename
 ```
+
+The input file should specify two fields - the email address to identify each
+user, and whether or not to hard-delete.
+
+| Column Name   | Purpose                                                    |
+|---------------|------------------------------------------------------------|
+| `email`       | Email address of user                                      |
+| `hard_delete` | `Y` or `y` to hard-delete user. `N` or `n` to soft-delete. |
 
 ### `group-read`
 
