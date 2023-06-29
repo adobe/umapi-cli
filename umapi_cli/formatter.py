@@ -74,6 +74,9 @@ class InputHandler:
             "add_profiles": Or(None, list, Use(_split_groups)),
             "remove_profiles": Or(None, list, Use(_split_groups)),
         }),
+        'group_delete_bulk': Schema({
+            "name": And(str, len),
+        }),
     }
 
     def __init__(self, fmt):

@@ -629,3 +629,60 @@ This is the expected format of an input file for bulk updating groups:
 
 \* in JSONL, users/profiles are represented as a JSON list. In CSV, they are
 serialised to a comma-delimited list (enclosed in double quotes).
+
+### `group-delete`
+
+Delete a single user group.
+
+Example:
+
+```
+$ umapi group-delete --name "Test Group"
+```
+
+Usage:
+
+```
+$ umapi group-delete --help
+Usage: umapi group-delete [OPTIONS]
+
+  Delete a single user group
+
+Options:
+  -h, --help       Show this message and exit.
+  -n, --name TEXT  Group name  [required]
+```
+
+### `group-delete-bulk`
+
+Delete a list of groups from an input file.
+
+Formats: [JSONL](http://jsonlines.org) or CSV (default)
+
+Expects `-i/--in-file` option that specifies input file path.
+
+Example:
+
+```
+$ umapi group-delete-bulk -i delete_groups.csv -f csv
+```
+
+Usage:
+
+```
+$ umapi group-delete-bulk --help
+Usage: umapi group-delete-bulk [OPTIONS]
+
+  Delete groups in bulk from input file
+
+Options:
+  -h, --help              Show this message and exit.
+  -f, --format csv|json   Input file format  [default: csv]
+  -i, --in-file FILENAME  Input filename
+```
+
+The input file just requies the name of each group to delete.
+
+| Column Name | Purpose                 |
+|-------------|-------------------------|
+| `name`      | Name of group to delete |

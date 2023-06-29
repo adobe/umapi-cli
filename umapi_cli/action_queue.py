@@ -70,6 +70,13 @@ class ActionQueue:
             group.remove_from_products(remove_profiles)
         self.push(group)
 
+    def queue_group_delete_action(self, name):
+        # there is a bug in the UMAPI that prevents multiple group delete
+        # operations in a single action call
+        group = GroupAction(name)
+        group.delete()
+        self.conn.execute_single(group, immediate=True)
+
     def queue_delete_action(self, email, hard_delete=False):
         user = UserAction(email)
         user.remove_from_organization(hard_delete)

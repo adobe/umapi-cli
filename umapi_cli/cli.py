@@ -374,5 +374,38 @@ def group_update_bulk(ctx, input_format, in_file):
         click.echo("Error: {}".format(err))
 
 
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-n', '--name', help='Group name', required=True)
+@click.pass_context
+def group_delete(ctx, name):
+    """Delete a single user group"""
+
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    queue.queue_group_delete_action(name)
+    queue.execute()
+    click.echo("errors: {}".format(queue.errors()))
+
+
+@app.command()
+@click.help_option('-h', '--help')
+@click.option('-f', '--format', 'input_format', help='Input file format', metavar='csv|json', default='csv',
+              show_default=True)
+@click.option('-i', '--in-file', help='Input filename', metavar='FILENAME')
+@click.pass_context
+def group_delete_bulk(ctx, input_format, in_file):
+    """Delete groups in bulk from input file"""
+
+    fmtr = _formatter(input_format, _input_fh(in_file), InputHandler('group_delete_bulk'))
+    umapi_conn = ctx.obj['conn']
+    queue = ActionQueue(umapi_conn)
+    for group in fmtr.read():
+        queue.queue_group_delete_action(group['name'])
+    queue.execute()
+    for err in queue.errors():
+        click.echo("Error: {}".format(err))
+
+
 if __name__ == '__main__':
     app()
