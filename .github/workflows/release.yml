@@ -1,0 +1,88 @@
+name: Package
+
+on:
+  push:
+    tags:
+    - 'v*'
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.release.outputs.upload_url }}
+      version: ${{ env.VERSION }}
+    steps:
+      - name: Get version from release tag
+        shell: bash
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "version is: ${{ env.VERSION }}"
+      - name: Create the release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: UMAPI CLI Tool ${{ env.VERSION }}
+  build-publish:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [macos-12, windows-2022]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v2.3.0
+        with:
+          poetry-version: 1.5.1
+      - name: Create build
+        shell: bash
+        run: make
+      - name: Archive release
+        shell: bash
+        run: |
+          distname=umapi-cli-${{ needs.create-release.outputs.version }}
+          cd dist
+          if [ "${{ matrix.os }}" = "windows-2022" ]; then
+            7z a "$distname.zip" umapi.exe
+            echo "EXECUTABLE=$distname.zip" >> $GITHUB_ENV
+            echo "SDIST=umapi_cli-${{ needs.create-release.outputs.version }}.tar.gz" >> $GITHUB_ENV
+            echo "BDIST=umapi_cli-${{ needs.create-release.outputs.version }}-py3-none-any.whl" >> $GITHUB_ENV
+          else
+            tar czf "$distname.tar.gz" umapi
+            echo "EXECUTABLE=$distname.tar.gz" >> $GITHUB_ENV
+          fi
+          cd ..
+      - name: Upload executable
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/${{ env.EXECUTABLE }}
+          asset_name: ${{ env.EXECUTABLE }}
+          asset_content_type: application/octet-stream
+      - name: Upload sdist
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/${{ env.SDIST }}
+          asset_name: ${{ env.SDIST }}
+          asset_content_type: application/octet-stream
+      - name: Upload bdist
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/${{ env.BDIST }}
+          asset_name: ${{ env.BDIST }}
+          asset_content_type: application/octet-stream
