@@ -3,21 +3,41 @@
 A simple command-line interface (CLI) client to the
 [Adobe User Management API](https://adobe-apiplatform.github.io/umapi-documentation/en/).
 
-## Feature Overview
+## Table of Contents
 
-* Users
-    * Read
-    * Update
-    * Create
-    * Delete
-* User Groups
-    * Read
-    * Update
-    * Create
-    * Delete
+* [Feature Overview](#feature-overview)
+* [Installation](#installation)
+* [Usage Overview](#usage-overview)
+* [Configuring](#configuring)
+* [Commands](#commands)
+* [Appendix: Building the Tool](#appendix-building-the-tool)
+* [Getting Help](#getting-help)
 
-Each command can operate on a single user or on a group of users (e.g. read all
-users or create users in bulk from an input file).
+# Feature Overview
+
+**User Operations**
+
+* [Query a Single User](#user-read)
+* [Query All Users](#user-read-all)
+* [Create Single User](#user-create)
+* [Create Users in Bulk](#user-create-bulk)
+* [Update a User](#user-update)
+* [Update Users in Bulk](#user-update-bulk)
+* [Remove or Delete a User](#user-delete)
+* [Remove or Delete Users in Bulk](#user-delete-bulk)
+
+**Group Operations**
+
+* [Query a Single Group](#group-read)
+* [Query All Groups](#group-read-all)
+* [Create Single Group](#group-create)
+* [Create Groups in Bulk](#group-create-bulk)
+* [Update a Group](#group-update)
+* [Update Groups in Bulk](#group-update-bulk)
+* [Delete a Group](#group-delete)
+* [Delete Groups in Bulk](#group-delete-bulk)
+
+"bulk" and "all" operations support multiple input/output formats.
 
 "Read All" output formats:
 
@@ -30,22 +50,42 @@ Bulk create/update/delete formats:
 * CSV
 * [JSONL](http://jsonlines.org)
 
-## Running in Development (Recommended)
+# Installation
 
-1. Clone this repo - `git clone https://github.com/adobe/umapi-cli.git`
-2. `cd umapi-cli`
-3. Install [Poetry](https://poetry.eustace.io/)
-4. Install dependencies `poetry install` (this command creates a unique virtual
-   environment)
-5. Run the tool with `poetry run umapi`
+The recommended method for installing the tool is
+[pipx](https://pypa.github.io/pipx/). It not only installs the tool in an
+isolated environment, but also makes it available on the shell's `$PATH`
+variable.
 
-## Running the Executable
+You can alternatively download the tool as a self-contained executable for
+Windows or macOS. Check the [releases
+page](https://github.com/adobe/umapi-cli/releases/) for the latest stable
+release. Source distributions and wheel builds are also published on each new
+release.
 
-Standalone executables can be found on the Releases page. These builds do not
-require Python to run. Since they embed Python, they are inherently a bit slower
-to run than the package build.
+## Option 1 - `pipx`
 
-## Usage Overview
+On a system with [pipx](https://pypa.github.io/pipx/installation/) installed,
+installing the UMAPI CLI Tool is simple:
+
+``` sh
+$ pipx install umapi-cli
+```
+
+This puts the `umapi` executable in your shell's `$PATH` and makes it available
+from any directory.
+
+``` sh
+$ umapi --help
+```
+
+## Option 2 - Executable
+
+A self-contained executable is also available for Windows and macOS. The
+executable embeds a Python environment, so Python does not need to be installed
+on the system. Note that this build is slower to start when executing the tool.
+
+# Usage Overview
 
 The tool operates on a series of commands. Each command performs a certain
 operation - read single user, read all users, create user/group, etc.
@@ -62,19 +102,25 @@ Options:
   --version   Show the version and exit.
 
 Commands:
-  group-read        Get details for a single user group
-  group-read-all    Get details for all groups in a console
-  user-create       Create a single user
-  user-create-bulk  Create users in bulk from an input file
-  user-delete       Delete a single user (from org and/or identity...
-  user-delete-bulk  Delete users in bulk from input file (from org and/or...
-  user-read         Get details for a single user
-  user-read-all     Get details for all users belonging to a console
-  user-update       Update user information for a single user
-  user-update-bulk  Update users in bulk from input file
+  group-create       Create a single user group.
+  group-create-bulk  Create groups in bulk from an input file
+  group-delete       Delete a single user group
+  group-delete-bulk  Delete groups in bulk from input file
+  group-read         Get details for a single user group
+  group-read-all     Get details for all groups in a console
+  group-update       Update information/memberships for a single group
+  group-update-bulk  Update groups in bulk from input file
+  user-create        Create a single user.
+  user-create-bulk   Create users in bulk from an input file
+  user-delete        Delete a single user (from org and/or identity...
+  user-delete-bulk   Delete users in bulk from input file (from org...
+  user-read          Get details for a single user
+  user-read-all      Get details for all users belonging to a console
+  user-update        Update user information for a single user
+  user-update-bulk   Update users in bulk from input file
 ```
 
-### General Options
+## General Options
 
 The following options apply to any command. They should be specified before the
 command being invoked.
@@ -104,7 +150,7 @@ The following general options apply to any UMAPI command:
   the results of read operations. **Note:** the tool logs output to stdout.
   Redirect stdout to a file to capture log information.
 
-## Configuring
+# Configuring
 
 The CLI tool requires a valid connection to the User Management API. This must
 be set up in the [Adobe Developer Console](https://developer.adobe.com/console)
@@ -159,9 +205,9 @@ The above example reads UMAPI config from the file `.env-secondary` since this
 file isn't named `.env`, it won't be read automatically. To read it, we pass the
 `--env` option before we specify the command (`user-read-all` in this case).
 
-## Commands
+# Commands
 
-### `user-read`
+## `user-read`
 
 Get details for a single user by email address. 
 
@@ -194,7 +240,7 @@ Options:
   -e, --email TEXT              User email address  [required]
 ```
 
-### `user-read-all`
+## `user-read-all`
 
 Get details for all users in a given console. 
 
@@ -238,7 +284,7 @@ Names of columns/fields when writing to CSV or JSONL are the same.
 \* in JSONL, groups are represented as a JSON list. In CSV, groups are
 serialised to a comma-delimited list (enclosed in double quotes).
 
-### `user-create`
+## `user-create`
 
 Create a single user.
 
@@ -275,7 +321,7 @@ Options:
                                   country code  [required]
 ```
 
-### `user-create-bulk`
+## `user-create-bulk`
 
 Create users in bulk from an input file.
 
@@ -320,7 +366,7 @@ same way as output from `user-read-all`.
 \* in JSONL, groups are represented as a JSON list. In CSV, groups are
 serialised to a comma-delimited list (enclosed in double quotes).
 
-### `user-update`
+## `user-update`
 
 Update a single user.
 
@@ -358,7 +404,7 @@ used to specify a new username when updating the username field.
 
 Apart from `-e/--email`, all other options are not required.
 
-### `user-update-bulk`
+## `user-update-bulk`
 
 Update users in bulk from an input file.
 
@@ -401,7 +447,7 @@ This is the expected format of an input file for bulk updating users:
 \* in JSONL, groups are represented as a JSON list. In CSV, groups are
 serialised to a comma-delimited list (enclosed in double quotes).
 
-### `user-delete`
+## `user-delete`
 
 Delete a single user from a given Admin Console.
 
@@ -438,7 +484,7 @@ Options:
                     org level
 ```
 
-### `user-delete-bulk`
+## `user-delete-bulk`
 
 Delete a list of users from an input file.
 
@@ -475,7 +521,7 @@ user, and whether or not to hard-delete.
 | `email`       | Email address of user                                      |
 | `hard_delete` | `Y` or `y` to hard-delete user. `N` or `n` to soft-delete. |
 
-### `group-read`
+## `group-read`
 
 Get details for a single group based on a given group name.
 
@@ -507,7 +553,7 @@ Options:
   -g, --group TEXT              Group name  [required]
 ```
 
-### `group-read-all`
+## `group-read-all`
 
 Get details for all groups in a given console.
 
@@ -547,7 +593,7 @@ Options:
 | `productName`    | If this is a product profile, this is the name of the associated product |
 | `licenseQuota`   | License quota setting if group is a product profile                      |
 
-### `group-update`
+## `group-update`
 
 Update a single user group. This command also allows the management of users and
 profiles for a given group.
@@ -587,7 +633,7 @@ Options:
 The group name, `-n/--name` is required to identify the group. All other options
 are optional.
 
-### `group-update-bulk`
+## `group-update-bulk`
 
 Update groups in bulk from an input file.
 
@@ -630,7 +676,7 @@ This is the expected format of an input file for bulk updating groups:
 \* in JSONL, users/profiles are represented as a JSON list. In CSV, they are
 serialised to a comma-delimited list (enclosed in double quotes).
 
-### `group-delete`
+## `group-delete`
 
 Delete a single user group.
 
@@ -653,7 +699,7 @@ Options:
   -n, --name TEXT  Group name  [required]
 ```
 
-### `group-delete-bulk`
+## `group-delete-bulk`
 
 Delete a list of groups from an input file.
 
@@ -686,3 +732,24 @@ The input file just requies the name of each group to delete.
 | Column Name | Purpose                 |
 |-------------|-------------------------|
 | `name`      | Name of group to delete |
+
+# Appendix: Building the Tool
+
+1. Clone this repo - `git clone https://github.com/adobe/umapi-cli.git`
+2. `cd umapi-cli`
+3. Ensure that [Poetry](https://poetry.eustace.io/) is installed.
+4. In the project directory, run `make` to build the executable and the package
+   distributions. These can be found in the `dist` directory.
+   
+To run the tool from source:
+
+1. Ensure dependencies are up to date with `poetry install`.
+2. Prefix invocations of the `umapi` command with `poetry run` (e.g. `poetry run
+   umapi --help`). This runs the `umapi` entrypoint from the project's virtual
+   environment.
+
+# Getting Help
+
+Should you run into any issues using this tool, or have any questions or
+comments, please create an [issue](https://github.com/adobe/umapi-cli/issues) to
+contact the development team.
