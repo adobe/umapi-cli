@@ -3,6 +3,9 @@ name = "umapi-cli"
 version = "2.0.0a2"
 description = "User Management API CLI Tool"
 authors = ["Andrew Dorton <adorton@adobe.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+repository = "https://github.com/adobe/umapi-cli/"
 
 [tool.poetry.dependencies]
 python = "^3.9"
