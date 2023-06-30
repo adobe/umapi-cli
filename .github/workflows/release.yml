@@ -50,14 +50,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: release-artifacts
-          path: dist/umapi_cli-${{ steps.get_version.output.version }}.tar.gz
+          path: dist/umapi_cli-*.tar.gz
           retention-days: 30
       - name: Save bdist
         if: matrix.os == 'windows-2022'
         uses: actions/upload-artifact@v3
         with:
           name: release-artifacts
-          path: dist/umapi_cli-${{ steps.get_version.output.version }}-py3-none-any.whl
+          path: dist/umapi_cli-*.whl
           retention-days: 30
   release:
     needs: build
