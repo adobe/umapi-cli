@@ -52,7 +52,9 @@ def app(ctx, env_file, test_mode, v):
     if env_file is not None:
         dotenv.load_dotenv(env_file)
     else:
-        dotenv.load_dotenv()
+        env_file = dotenv.find_dotenv(usecwd=True)
+        if env_file:
+            dotenv.load_dotenv(env_file)
     ctx.ensure_object(dict)
     conf = config.get_options()
     ctx.obj['conn'] = client.create_conn(conf, test_mode)
