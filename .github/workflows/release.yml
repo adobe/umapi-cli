@@ -23,16 +23,19 @@ jobs:
       - name: Create build
         shell: bash
         run: make
+      - name: Get version
+        id: get_version
+        uses: battila7/get-version-action@v2
       - name: Prepare artifacts
         shell: bash
         run: |
-          distname=umapi-cli-${{ needs.create-release.outputs.version }}
+          distname=umapi-cli-${{ steps.get_version.outputs.version }}
           cd dist
           if [ "${{ matrix.os }}" = "windows-2022" ]; then
             7z a "$distname.zip" umapi.exe
             echo "EXECUTABLE=$distname.zip" >> $GITHUB_ENV
-            echo "SDIST=umapi_cli-${{ needs.create-release.outputs.version }}.tar.gz" >> $GITHUB_ENV
-            echo "BDIST=umapi_cli-${{ needs.create-release.outputs.version }}-py3-none-any.whl" >> $GITHUB_ENV
+            echo "SDIST=umapi_cli-${{ steps.get_version.output.version }}.tar.gz" >> $GITHUB_ENV
+            echo "BDIST=umapi_cli-${{ steps.get_version.output.version }}-py3-none-any.whl" >> $GITHUB_ENV
           else
             tar czf "$distname.tar.gz" umapi
             echo "EXECUTABLE=$distname.tar.gz" >> $GITHUB_ENV
