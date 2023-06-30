@@ -34,8 +34,6 @@ jobs:
           if [ "${{ matrix.os }}" = "windows-2022" ]; then
             7z a "$distname.zip" umapi.exe
             echo "EXECUTABLE=$distname.zip" >> $GITHUB_ENV
-            echo "SDIST=umapi_cli-${{ steps.get_version.output.version }}.tar.gz" >> $GITHUB_ENV
-            echo "BDIST=umapi_cli-${{ steps.get_version.output.version }}-py3-none-any.whl" >> $GITHUB_ENV
           else
             tar czf "$distname.tar.gz" umapi
             echo "EXECUTABLE=$distname.tar.gz" >> $GITHUB_ENV
@@ -53,8 +51,8 @@ jobs:
         with:
           name: release-artifacts
           path: |
-            dist/${{env.SDIST}}
-            dist/${{env.BDIST}}
+            dist/umapi_cli-${{ steps.get_version.output.version }}.tar.gz
+            dist/umapi_cli-${{ steps.get_version.output.version }}-py3-none-any.whl
           retention-days: 30
   release:
     needs: build
