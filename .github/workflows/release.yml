@@ -10,6 +10,11 @@ jobs:
     strategy:
       matrix:
         os: [macos-12, windows-2022]
+        include:
+          - os: macos-12
+            platform: macos
+          - os: windows-2022
+            platform: win
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -29,7 +34,7 @@ jobs:
       - name: Prepare artifacts
         shell: bash
         run: |
-          distname=umapi-cli-exec-${{ steps.get_version.outputs.version }}
+          distname=umapi-cli-${{ matrix.platform }}-${{ steps.get_version.outputs.version }}
           cd dist
           if [ "${{ matrix.os }}" = "windows-2022" ]; then
             7z a "$distname.zip" umapi.exe
