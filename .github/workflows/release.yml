@@ -54,6 +54,7 @@ jobs:
             dist/${{env.BDIST}}
           retention-days: 30
   release:
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
