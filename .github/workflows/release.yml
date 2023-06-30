@@ -5,26 +5,7 @@ on:
     tags:
     - 'v*'
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
-      version: ${{ env.VERSION }}
-    steps:
-      - name: Get version from release tag
-        shell: bash
-        run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "version is: ${{ env.VERSION }}"
-      - name: Create the release
-        id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: UMAPI CLI Tool ${{ env.VERSION }}
-  build-publish:
+  build:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
@@ -42,7 +23,7 @@ jobs:
       - name: Create build
         shell: bash
         run: make
-      - name: Archive release
+      - name: Prepare artifacts
         shell: bash
         run: |
           distname=umapi-cli-${{ needs.create-release.outputs.version }}
@@ -57,32 +38,32 @@ jobs:
             echo "EXECUTABLE=$distname.tar.gz" >> $GITHUB_ENV
           fi
           cd ..
-      - name: Upload executable
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Save executable
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: dist/${{ env.EXECUTABLE }}
-          asset_name: ${{ env.EXECUTABLE }}
-          asset_content_type: application/octet-stream
-      - name: Upload sdist
+          name: release-artifacts
+          path: dist/${{env.EXECUTABLE}}
+          retention-days: 30
+      - name: Save dists
         if: matrix.os == 'windows-2022'
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: dist/${{ env.SDIST }}
-          asset_name: ${{ env.SDIST }}
-          asset_content_type: application/octet-stream
-      - name: Upload bdist
-        if: matrix.os == 'windows-2022'
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: release-artifacts
+          path: |
+            dist/${{env.SDIST}}
+            dist/${{env.BDIST}}
+          retention-days: 30
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+      - name: Get version
+        id: get_version
+        uses: battila7/get-version-action@v2
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: dist/${{ env.BDIST }}
-          asset_name: ${{ env.BDIST }}
-          asset_content_type: application/octet-stream
+          name: UMAPI CLI Tool ${{ steps.get_version.outputs.version }}
+          files: release-artifacts/*
