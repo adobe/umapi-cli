@@ -747,6 +747,11 @@ To run the tool from source:
 2. Prefix invocations of the `umapi` command with `poetry run` (e.g. `poetry run
    umapi --help`). This runs the `umapi` entrypoint from the project's virtual
    environment.
+   
+> **Note:** if you are doing development work on the tool and wish to see full
+> error information when an error occurs, set the `UMAPI_DEBUG` environment
+> variable to `1`. This will dump more information on the error including a
+> stack trace.
 
 # Getting Help
 
