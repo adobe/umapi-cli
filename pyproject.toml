@@ -22,7 +22,7 @@ pefile = "^2022.5"
 macholib = {version = "^1.16.2", platform = "darwin"}
 
 [tool.poetry.scripts]
-umapi = 'umapi_cli.cli:app'
+umapi = 'umapi_cli.cli:entry'
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"

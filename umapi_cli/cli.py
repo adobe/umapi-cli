@@ -10,6 +10,8 @@
 
 import click
 import sys
+import io
+import os
 from umapi_client import UserQuery, UsersQuery, GroupsQuery
 import dotenv
 from pathlib import Path
@@ -17,7 +19,7 @@ from umapi_cli import config
 from umapi_cli import client
 from umapi_cli import formatter
 from umapi_cli.action_queue import ActionQueue
-from umapi_cli.formatter import normalize, InputHandler, OutputHandler
+from umapi_cli.formatter import normalize, InputHandler, OutputHandler, PassthroughHandler
 from umapi_cli import log
 from umapi_cli.version import __version__ as app_version
 
@@ -58,6 +60,17 @@ def app(ctx, env_file, test_mode, v):
     ctx.ensure_object(dict)
     conf = config.get_options()
     ctx.obj['conn'] = client.create_conn(conf, test_mode)
+
+
+def entry():
+    debug = True if os.environ.get('UMAPI_DEBUG') == '1' else False
+    try:
+        app()
+    except Exception as e:
+        if not debug:
+            click.echo(f"ERROR: {e}")
+        else:
+            raise e
 
 
 @app.command()
@@ -175,7 +188,12 @@ def user_create(ctx, user_type, email, username, domain, groups, firstname, last
     queue.queue_user_create_action(user_type, email, country, firstname, lastname,
                                    username, domain, groups)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Create operation succeeded")
 
 
 @app.command()
@@ -199,9 +217,9 @@ def user_create_bulk(ctx, input_format, in_file):
                                        firstname=user['firstname'],
                                        lastname=user['lastname'],
                                        country=user['country'])
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
 
 
 @app.command()
@@ -218,7 +236,12 @@ def user_delete(ctx, email, hard_delete):
     queue = ActionQueue(umapi_conn)
     queue.queue_delete_action(email, hard_delete)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Delete operation succeeded")
 
 
 @app.command()
@@ -236,9 +259,9 @@ def user_delete_bulk(ctx, input_format, in_file):
     for user in fmtr.read():
         queue.queue_delete_action(user['email'],
                                   True if user['hard_delete'] == 'y' else False)
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
 
 
 @app.command()
@@ -264,7 +287,12 @@ def user_update(ctx, email, email_new, firstname, lastname, username, groups_add
                               lastname=lastname, username=username, add_groups=groups_add,
                               remove_groups=groups_remove)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Update operation succeeded")
 
 
 @app.command()
@@ -281,9 +309,9 @@ def user_update_bulk(ctx, input_format, in_file):
     queue = ActionQueue(umapi_conn)
     for user in fmtr.read():
         queue.queue_update_action(**user)
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
 
 
 @app.command()
@@ -305,7 +333,12 @@ def group_create(ctx, name, description):
     queue = ActionQueue(umapi_conn)
     queue.queue_group_create_action(name, description)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Create operation succeeded")
 
 
 @app.command()
@@ -322,9 +355,9 @@ def group_create_bulk(ctx, input_format, in_file):
     queue = ActionQueue(umapi_conn)
     for group in fmtr.read():
         queue.queue_group_create_action(group['name'], group['description'])
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
 
 
 @app.command()
@@ -354,7 +387,12 @@ def group_update(ctx, name, name_new, description, users_add, users_remove, prof
                                     description=description, add_users=users_add, remove_users=users_remove,
                                     add_profiles=profiles_add, remove_profiles=profiles_remove)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Update operation succeeded")
 
 
 @app.command()
@@ -371,9 +409,9 @@ def group_update_bulk(ctx, input_format, in_file):
     queue = ActionQueue(umapi_conn)
     for group in fmtr.read():
         queue.queue_group_update_action(**group)
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
 
 
 @app.command()
@@ -387,7 +425,12 @@ def group_delete(ctx, name):
     queue = ActionQueue(umapi_conn)
     queue.queue_group_delete_action(name)
     queue.execute()
-    click.echo("errors: {}".format(queue.errors()))
+    errors = queue.errors()
+    if errors:
+        click.echo("One or more errors occurred")
+        click.echo(render_errors(errors).strip())
+    else:
+        click.echo("Delete operation succeeded")
 
 
 @app.command()
@@ -404,10 +447,50 @@ def group_delete_bulk(ctx, input_format, in_file):
     queue = ActionQueue(umapi_conn)
     for group in fmtr.read():
         queue.queue_group_delete_action(group['name'])
-    queue.execute()
-    for err in queue.errors():
-        click.echo("Error: {}".format(err))
+    completed = queue.execute()
+    errors = queue.errors()
+    print_bulk_summaries(completed, errors)
+
+
+def render_errors(errors):
+    i = 1
+    error_str = []
+    for messages in errors:
+        error_str.append(f"Error {i} messages:")
+        error_io = io.StringIO()
+        fmtr = _formatter('pretty', error_io, PassthroughHandler())
+        for message in messages:
+            fmtr.record(message)
+        fmtr.write()
+        error_io.seek(0)
+        for l in error_io.getvalue().split('\n'):
+            error_str.append('   '+l)
+        i += 1
+    return '\n'.join(error_str)
+
+
+def render_summary(summary):
+    summary_io = io.StringIO()
+    fmtr = _formatter('pretty', summary_io, PassthroughHandler())
+    fmtr.record(summary)
+    fmtr.write()
+    summary_io.seek(0)
+    return summary_io.getvalue()
+
+def print_bulk_summaries(completed, errors):
+    summary = {
+        "Executed": completed,
+        "Succeeded": completed-len(errors),
+        "Errors": len(errors),
+    }
+    click.echo("--- Action Summary ---")
+    click.echo(render_summary(summary).strip())
+    click.echo("----------------------")
+    if errors:
+        click.echo("--- Error Summary ---")
+        click.echo(render_errors(errors).strip())
+        click.echo("--------------")
 
 
 if __name__ == '__main__':
-    app()
+    entry()

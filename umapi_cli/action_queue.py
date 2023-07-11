@@ -29,11 +29,13 @@ class ActionQueue:
         queued = len(self.actions)
         log.info(f'Number of actions to execute: {len(self.actions)}')
         for action in self.actions:
-            _, _, c = self.conn.execute_single(action)
-            if c > 0:
-                completed += c
-                log.info(f"Completion: {completed}/{queued} ({round(completed/queued*100, 2)}%)")
-        _, _, c = self.conn.execute_queued()
+            self.conn.execute_single(action)
+            completed += 1
+            if completed % 10 == 0:
+                log.info(f"Executed actions: {completed}/{queued} ({round(completed/queued*100, 2)}%)")
+        self.conn.execute_queued()
+        log.info(f"Executed actions: {completed}/{queued} ({round(completed/queued*100, 2)}%)")
+        return completed
 
     def errors(self):
         return [a.execution_errors() for a in self.actions if a.execution_errors()]

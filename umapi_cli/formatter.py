@@ -119,6 +119,15 @@ class OutputHandler:
         return {k: v for k, v in record.items() if k in self.formats[self.format]}
 
 
+class PassthroughHandler:
+    """Don't validate or transform. Used for error reporting"""
+
+    def __init__(self, _=None):
+        pass
+
+    def handle(self, record):
+        return record
+
 class Formatter:
     def __init__(self, fh, handler):
         self.records = []
