@@ -85,6 +85,9 @@ A self-contained executable is also available for Windows and macOS. The
 executable embeds a Python environment, so Python does not need to be installed
 on the system. Note that this build is slower to start when executing the tool.
 
+Executables can be found on the [latest
+releases](https://github.com/adobe/umapi-cli/releases/latest) page.
+
 # Usage Overview
 
 The tool operates on a series of commands. Each command performs a certain
