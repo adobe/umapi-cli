@@ -1,5 +1,19 @@
 | tag    | date       | title                 |
 |--------|------------|-----------------------|
+| v2.1.0 | 2023-07-20 | UMAPI CLI Tool v2.1.0 |
+
+# New Features
+
+* #1 Include ID field in user-read and user-read-all
+* #2 Infer output format in user/group read commands
+* #3 Order CSV columns
+* #4 Custom user-agent
+* #5 Expose tags in user-read
+
+---
+
+| tag    | date       | title                 |
+|--------|------------|-----------------------|
 | v2.0.0 | 2023-07-11 | UMAPI CLI Tool v2.0.0 |
 
 # Initial Stable Release

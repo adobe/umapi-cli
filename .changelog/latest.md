@@ -1,5 +1,7 @@
-# Initial Stable Release
+# New Features
 
-This is the initial stable release of the UMAPI CLI tool. For full
-documentation, see `README.md`. If you run into any problems, please create an
-issue on this repository.
+* #1 Include ID field in user-read and user-read-all
+* #2 Infer output format in user/group read commands
+* #3 Order CSV columns
+* #4 Custom user-agent
+* #5 Expose tags in user-read
