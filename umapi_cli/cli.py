@@ -41,6 +41,14 @@ def _input_fh(in_file):
     return open(in_file, 'r')
 
 
+def infer_format(filename):
+    if filename.endswith('csv'):
+        return 'csv'
+    if filename.endswith('json') or filename.endswith('jsonl'):
+        return 'json'
+    return None
+
+
 @click.group()
 @click.option('--env', 'env_file', help="Path to .env file (optional)", default=None, type=click.Path())
 @click.option('-t', '--test', 'test_mode', help="Run command in test mode", default=False, show_default=False,
@@ -94,12 +102,16 @@ def user_read(ctx, output_format, email):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
-              show_default=True)
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', show_default=True)
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
 @click.pass_context
 def user_read_all(ctx, output_format, out_file):
     """Get details for all users belonging to a console"""
+
+    if out_file is not None:
+        output_format = infer_format(out_file)
+    if output_format is None:
+        output_format = 'pretty'
 
     fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read_all'))
     umapi_conn = ctx.obj['conn']
@@ -136,12 +148,17 @@ def group_read(ctx, output_format, group_name):
 
 @app.command()
 @click.help_option('-h', '--help')
-@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', default='pretty',
+@click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty',
               show_default=True)
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
 @click.pass_context
 def group_read_all(ctx, output_format, out_file):
     """Get details for all groups in a console"""
+
+    if out_file is not None:
+        output_format = infer_format(out_file)
+    if output_format is None:
+        output_format = 'pretty'
 
     fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('group_read'))
     umapi_conn = ctx.obj['conn']
