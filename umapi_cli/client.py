@@ -9,6 +9,8 @@
 # governing permissions and limitations under the License.
 
 from umapi_client import OAuthS2S, Connection
+from .version import __version__ as app_version
+from . import log
 
 
 def create_conn(conf, test_mode):
@@ -28,9 +30,13 @@ def create_conn(conf, test_mode):
     if conf.get('UMAPI_URL') is not None:
         conn_args['endpoint'] = conf['UMAPI_URL']
 
+    user_agent = f"umapi-cli/{app_version}"
+    log.debug("User-Agent: %s", user_agent)
+
     return Connection(
         org_id=conf['UMAPI_ORG_ID'],
         auth=auth,
         test_mode=test_mode,
+        user_agent=user_agent,
         **conn_args,
     )
