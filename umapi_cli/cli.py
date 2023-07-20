@@ -101,7 +101,7 @@ def user_read(ctx, output_format, email):
 def user_read_all(ctx, output_format, out_file):
     """Get details for all users belonging to a console"""
 
-    fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read'))
+    fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read_all'))
     umapi_conn = ctx.obj['conn']
     query = UsersQuery(umapi_conn)
     report_total = True
