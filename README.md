@@ -243,6 +243,11 @@ Options:
   -e, --email TEXT              User email address  [required]
 ```
 
+**Note:** The CSV format for `user-read` is the same as `user-read-all` ([see
+below](#user-read-all)) with the exception of the `tags` column. This column can
+currently only be read on a user-by-user basis and thus is not included in
+`user-read-all` results.
+
 ## `user-read-all`
 
 Get details for all users in a given console. 
