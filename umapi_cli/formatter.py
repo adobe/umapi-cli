@@ -116,8 +116,12 @@ class OutputHandler:
         assert fmt in self.formats, "Invalid format"
         self.format = fmt
 
+    def get_fields(self):
+        return self.formats[self.format]
+
     def handle(self, record):
-        return {k: v for k, v in record.items() if k in self.formats[self.format]}
+        fields = self.get_fields()
+        return {k: v for k, v in record.items() if k in fields}
 
 
 class PassthroughHandler:
@@ -175,7 +179,7 @@ class CSVFormatter(Formatter):
     def write(self):
         if not self.records:
             return
-        writer = _csv.DictWriter(self.fh, self.fieldnames(self.records), lineterminator='\n')
+        writer = _csv.DictWriter(self.fh, self.handler.get_fields(), lineterminator='\n')
         writer.writeheader()
         writer.writerows(map(self.format_rec, self.records))
 
@@ -184,12 +188,6 @@ class CSVFormatter(Formatter):
         for record in reader:
             self.record(self.handler.handle(record))
         return self.records
-
-    def fieldnames(self, records):
-        fieldnames = set()
-        for rec in (self.handler.handle(r) for r in records):
-            fieldnames.update(set(rec.keys()))
-        return sorted(list(fieldnames))
 
     def format_rec(self, record):
         formatted = {}
