@@ -101,6 +101,18 @@ class OutputHandler:
             "username",
             "domain",
             "groups",
+            "tags",
+        ],
+        'user_read_all': [
+            "id",
+            "type",
+            "email",
+            "firstname",
+            "lastname",
+            "country",
+            "username",
+            "domain",
+            "groups",
         ],
         'group_read': [
             'groupName',
