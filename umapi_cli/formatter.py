@@ -92,6 +92,7 @@ class OutputHandler:
 
     formats = {
         'user_read': [
+            "id",
             "type",
             "email",
             "firstname",
