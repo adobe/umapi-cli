@@ -239,7 +239,7 @@ Usage: umapi user-read [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -f, --format csv|json|pretty  Output format
   -e, --email TEXT              User email address  [required]
 ```
 
@@ -272,7 +272,7 @@ Usage: umapi user-read-all [OPTIONS]
 
 Options:
   -h, --help                    Show this message and exit.
-  -f, --format csv|json|pretty  Output format  [default: pretty]
+  -f, --format csv|json|pretty  Output format
   -o, --out-file FILENAME       Write output to this filename
 ```
 
