@@ -1,7 +1,4 @@
 # New Features
 
-* #1 Include ID field in user-read and user-read-all
-* #2 Infer output format in user/group read commands
-* #3 Order CSV columns
-* #4 Custom user-agent
-* #5 Expose tags in user-read
+* #7 Add option to `user-read-all` to limit users to members of specific group
+* #8 Include `tags` field in `user-read-all` output

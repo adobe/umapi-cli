@@ -1,5 +1,16 @@
 | tag    | date       | title                 |
 |--------|------------|-----------------------|
+| v2.2.0 | 2023-07-21 | UMAPI CLI Tool v2.2.0 |
+
+# New Features
+
+* #7 Add option to `user-read-all` to limit users to members of specific group
+* #8 Include `tags` field in `user-read-all` output
+
+---
+
+| tag    | date       | title                 |
+|--------|------------|-----------------------|
 | v2.1.0 | 2023-07-20 | UMAPI CLI Tool v2.1.0 |
 
 # New Features
