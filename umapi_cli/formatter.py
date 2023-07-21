@@ -113,6 +113,7 @@ class OutputHandler:
             "username",
             "domain",
             "groups",
+            "tags",
         ],
         'group_read': [
             'groupName',
