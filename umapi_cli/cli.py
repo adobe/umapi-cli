@@ -104,8 +104,9 @@ def user_read(ctx, output_format, email):
 @click.help_option('-h', '--help')
 @click.option('-f', '--format', 'output_format', help='Output format', metavar='csv|json|pretty', show_default=True)
 @click.option('-o', '--out-file', help='Write output to this filename', metavar='FILENAME')
+@click.option('-g', '--in-group', help="Limit query to members of GROUP", metavar='GROUP')
 @click.pass_context
-def user_read_all(ctx, output_format, out_file):
+def user_read_all(ctx, output_format, out_file, in_group):
     """Get details for all users belonging to a console"""
 
     if out_file is not None:
@@ -115,7 +116,7 @@ def user_read_all(ctx, output_format, out_file):
 
     fmtr = _formatter(output_format, _output_fh(out_file), OutputHandler('user_read_all'))
     umapi_conn = ctx.obj['conn']
-    query = UsersQuery(umapi_conn)
+    query = UsersQuery(umapi_conn, in_group=in_group)
     report_total = True
     for user in query:
         total, *_ = query.stats()

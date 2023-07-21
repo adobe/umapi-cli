@@ -274,6 +274,7 @@ Options:
   -h, --help                    Show this message and exit.
   -f, --format csv|json|pretty  Output format
   -o, --out-file FILENAME       Write output to this filename
+  -g, --in-group GROUP          Limit query to members of GROUP
 ```
 
 Names of columns/fields when writing to CSV or JSONL are the same.
